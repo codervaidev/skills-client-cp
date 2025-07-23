@@ -2576,7 +2576,15 @@ export default function CourseDetailsPage() {
                                   price: 4500,
                                 });
                                 toast.success("Discount Applied!");
-                              } else if (couponCode == "CPINSTRUCTORSPECIAL") {
+                              }
+                              else if (couponCode == "CUETCSE24") {
+                                setCourseData({
+                                  ...courseData,
+                                  price: 3750,
+                                });
+                                toast.success("CUET CSE 2024 Special Discount Applied!");
+                              }
+                               else if (couponCode == "CPINSTRUCTORSPECIAL") {
                                 setCourseData({
                                   ...courseData,
                                   price: 3250,
