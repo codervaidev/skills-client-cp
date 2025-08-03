@@ -2577,6 +2577,13 @@ export default function CourseDetailsPage() {
                                 });
                                 toast.success("Discount Applied!");
                               }
+                              else if (couponCode == "ACSCHAMPION50") {
+                                setCourseData({
+                                  ...courseData,
+                                  price: 3250,
+                                });
+                                toast.success("Congratulations! You have won 50% discount as ACS Champion Student!");
+                              }
                               else if (couponCode == "CUETCSE24") {
                                 setCourseData({
                                   ...courseData,
