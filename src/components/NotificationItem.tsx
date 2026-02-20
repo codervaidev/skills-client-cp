@@ -110,19 +110,22 @@ export default function NotificationItem({
                 "&token=" +
                 token;
             } else if (notification.type === "ASSIGNMENT") {
+              const courseId = notification?.data?.moduleData?.courseId ?? notification?.course_id ?? "15";
               router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}`,
+                `/course/${courseId}/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}`,
               );
             } else if (notification.type === "THREADS") {
+              const courseId = notification?.data?.moduleData?.courseId ?? notification?.course_id ?? "15";
               router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}?discussionId=${notification?.data?.moduleData?.discussionId}`,
+                `/course/${courseId}/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}?discussionId=${notification?.data?.moduleData?.discussionId}`,
               );
             }
             
 
             if (notification.type === "COURSE_UPDATE") {
+              const courseId = notification?.data?.moduleData?.courseId ?? notification?.course_id ?? "15";
               router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/`,
+                `/course/${courseId}/${notification?.data?.moduleData?.chapterId}`,
               );
             }
             if (notification.type !== "COURSE_UPDATE") {

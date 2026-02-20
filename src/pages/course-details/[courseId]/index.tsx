@@ -27,12 +27,16 @@ import jwtDecode from "jwt-decode";
 import Button from "@/components/Button";
 import GradientButton from "@/components/GradientButton";
 import { ButtonBase } from "@mui/material";
-import Lottie from "react-lottie";
+import dynamic from "next/dynamic";
 import celebrationLottieData from "./Animation - 1711894031153.json";
-import { useSearchParams } from "next/navigation";
+
+const LottiePlayer = dynamic(() => import("@/components/LottiePlayer"), {
+  ssr: false,
+});
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
+import CourseDetailsSkeleton from "@/components/CourseDetailsSkeleton";
 
 const settings = {
   dots: true,
@@ -68,7 +72,6 @@ const lottieOptions = {
 };
 
 export default function CourseDetailsPage() {
-  const searchParams = useSearchParams();
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -397,6 +400,10 @@ export default function CourseDetailsPage() {
     setOpenChapterItems({ 0: true });
   }, [courseData]);
 
+  if (user.loading && !courseData?.title) {
+    return <CourseDetailsSkeleton />;
+  }
+
   return (
     <div className={`  ${HindSiliguri.variable} font-hind  overflow-x-hidden `}>
       <Nav></Nav>
@@ -406,17 +413,17 @@ export default function CourseDetailsPage() {
         <div>
           {/* forpc */}
           <div className="absolute  hidden lg:block right-0 top-0 z-[999999]">
-            <Lottie options={lottieOptions} height={"50vh"} width={"30vw"} />
+            <LottiePlayer options={lottieOptions} height={"50vh"} width={"30vw"} />
           </div>
           <div className="absolute hidden lg:block  left-0 bottom-0 z-[999999]">
-            <Lottie options={lottieOptions} height={"50vh"} width={"30vw"} />
+            <LottiePlayer options={lottieOptions} height={"50vh"} width={"30vw"} />
           </div>
           {/* forPhones */}
           <div className="absolute lg:hidden  right-0 top-0 z-[999999]">
-            <Lottie options={lottieOptions} height={400} width={400} />
+            <LottiePlayer options={lottieOptions} height={400} width={400} />
           </div>
           <div className="absolute  lg:hidden left-0 bottom-0 z-[999999]">
-            <Lottie options={lottieOptions} height={400} width={400} />
+            <LottiePlayer options={lottieOptions} height={400} width={400} />
           </div>
         </div>
       )}
@@ -764,249 +771,100 @@ export default function CourseDetailsPage() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="md:w-[50vw] lg:w-[40vw] text-darkHeading transform overflow-hidden  rounded-2xl bg-[#B2F100]/5  dark:bg-[#BBBBBB]/10 backdrop-blur-3xl border border-gray-300/30  text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="div"
-                    className="text-lg font-medium leading-6 p-2 "
-                  >
-                    <div className="flex justify-end">
-                      <button
-                        className="hover:bg-gray-300/20 p-2 mr-2 rounded"
-                        onClick={() => {
-                          setCoursePurchaseSuccessfull(false);
-                        }}
-                      >
-                        <svg
-                          width="14"
-                          height="15"
-                          viewBox="0 0 14 15"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M13 1.25L1 13.25M1 1.25L13 13.25"
-                            stroke="#FBEEEC"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                <Dialog.Panel className="w-[95vw] max-w-4xl text-darkHeading transform overflow-hidden rounded-2xl bg-white/90 dark:bg-[#0f0a11]/95 backdrop-blur-xl border border-gray-200/50 dark:border-[#B153E0]/20 text-left align-middle shadow-2xl transition-all">
+                  <Dialog.Title as="div" className="sr-only">
+                    অভিনন্দন
+                  </Dialog.Title>
+                  <div className="relative p-6 lg:p-8">
+                    <button
+                      aria-label="Close"
+                      className="absolute top-4 right-4 z-10 p-2 rounded-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
+                      onClick={() => setCoursePurchaseSuccessfull(false)}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 1.25L1 13.25M1 1.25L13 13.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+                      {/* Left column: celebration + message + access code */}
+                      <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+                        <div className="relative w-full max-w-[280px] mx-auto lg:mx-0">
+                          <img
+                            src="/Festive flags and hands with decorations.png"
+                            alt=""
+                            className="w-full h-auto object-contain"
                           />
-                        </svg>
+                        </div>
+                        <h2 className="text-2xl lg:text-3xl font-bold text-heading dark:text-darkHeading mt-4 bg-gradient-to-r from-[#B153E0] to-[#7c3aed] dark:from-[#B153E0] dark:to-[#a78bfa] bg-clip-text text-transparent">
+                          অভিনন্দন!
+                        </h2>
+                        <p className="text-paragraph dark:text-darkParagraph text-sm mt-3 font-medium leading-relaxed">
+                          তুমি সফলভাবে কোর্সটি পারচেস করতে পেরেছ! প্রোগ্রামিং এ তোমার আগ্রহ দেখে আমরা অন্ত্যন্ত খুশি। এখন শুধু প্রয়োজন ডেডিকেশন এর সাথে লেগে থাকা, ক্লাস গুলো ঠিক মত করা সাথে এসাইনমেন্ট কুইজ ও প্রোগ্রামিং প্রব্লেম সলভের মাধ্যমে নিজেকে একজন দক্ষ প্রোগ্রামার করে গড়ে তোলা। আর তোমাকে সর্বাত্নক হেল্প করতে পাশে আছি আমরা কোডার ভাই পরিবার!
+                        </p>
+                        {accessCode && (
+                          <div className="flex items-center gap-3 mt-5 w-full p-4 rounded-xl bg-gradient-to-br from-[#B153E0]/10 to-[#B153E0]/5 dark:from-[#B153E0]/20 dark:to-[#B153E0]/10 border border-[#B153E0]/20">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-heading dark:text-darkHeading opacity-80 mb-1">আপনার ACCESS CODE</p>
+                              <p className="font-mono text-base font-semibold text-heading dark:text-darkHeading truncate">{accessCode}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(accessCode);
+                                toast.success("Access code copied!");
+                              }}
+                              className="shrink-0 p-2.5 rounded-xl bg-[#B153E0]/20 hover:bg-[#B153E0]/30 dark:bg-[#B153E0]/30 dark:hover:bg-[#B153E0]/40 text-[#B153E0] transition-colors"
+                            >
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right column: steps in two-column grid */}
+                      <div className="flex flex-col">
+                        <h3 className="text-lg font-semibold text-heading dark:text-darkHeading mb-4 flex items-center gap-2">
+                          <span className="w-1 h-6 rounded-full bg-[#B153E0]" />
+                          এখন তোমার কি করনীয়
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {[
+                            { n: 1, text: <>প্রথমত আমাদের ফেসবুক প্রাইভেট গ্রুপ ও Discord Server এ জয়েন হওয়ার জন্য তোমার ফোনে পাঠানো ACCESS CODE টি Copy করে বাকি ইনফরমেশন দিয়ে রিকোয়েস্ট দাও। ২৪ ঘন্টার মধ্যে অ্যাপ্রুভ করা হবে।</> },
+                            { n: 2, text: <>যুক্ত হয়ে যাও আমাদের <a className="text-[#B153E0] dark:text-[#a78bfa] font-semibold underline hover:no-underline" href="https://www.facebook.com/groups/codervai.cp.batch03/" target="_blank" rel="noopener noreferrer">ফেইসবুক প্রাইভেট গ্রুপে</a></> },
+                            { n: 3, text: <>যুক্ত হয়ে যাও আমাদের <a className="text-[#B153E0] dark:text-[#a78bfa] font-semibold underline hover:no-underline" href="https://discord.gg/u3m7PAnfeq" target="_blank" rel="noopener noreferrer">Discord Server এ</a></> },
+                            { n: 4, text: <>আমাদের ওরিয়েন্টেশন ক্লাস হবে 10 April রাত ৯.৩০ এ ফেসবুক সিক্রেট গ্রুপে এবং ওয়েবসাইটেও।</> },
+                            { n: 5, text: <>ওয়েবসাইট থেকে লাইভ ক্লাস গুলো দেখার জন্য তোমার প্রোফাইলে লাইভ ক্লাস মেন্যুতে যেতে হবে।</> },
+                            { n: 6, text: <>কোর্স শুরু হওয়ার আগে C এবং C++ সম্পর্কে তোমরা এখান থেকে জেনে নিতে পারো। আগে থেকেই প্রিপেয়ার হয়ে গেলে!</> },
+                            { n: 7, text: <>Learn C from <a className="text-[#B153E0] dark:text-[#a78bfa] font-semibold underline hover:no-underline" href="https://www.w3schools.com/c/" target="_blank" rel="noopener noreferrer">w3schools</a> and C++ from <a className="text-[#B153E0] dark:text-[#a78bfa] font-semibold underline hover:no-underline" href="https://www.w3schools.com/cpp/" target="_blank" rel="noopener noreferrer">w3schools</a>!</> },
+                            { n: 8, text: <>কোর্স সম্পর্কে তোমার যাবতীয় যত জিজ্ঞাসা প্রশ্ন সব আমাদের ফেসবুক গ্রুপে পোস্ট করতে পারো বা ওয়েবসাইট সাপোর্ট মেন্যুতে গিয়ে টিকেট বানিয়ে আমাদের থেকে জেনে নিতে পারো।</> },
+                          ].map(({ n, text }) => (
+                            <div
+                              key={n}
+                              className="flex gap-3 p-3 rounded-xl bg-gray-100/80 dark:bg-white/5 border border-gray-200/50 dark:border-white/10 hover:border-[#B153E0]/30 dark:hover:border-[#B153E0]/30 transition-colors"
+                            >
+                              <span className="shrink-0 w-8 h-8 rounded-lg bg-[#B153E0] text-white font-bold text-sm flex items-center justify-center">
+                                {n}
+                              </span>
+                              <p className="text-heading dark:text-darkHeading text-sm leading-snug pt-0.5">
+                                {text}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-gray-200/50 dark:border-white/10">
+                      <button
+                        onClick={() => setCoursePurchaseSuccessfull(false)}
+                        className="w-full py-3.5 rounded-xl font-bold bg-[#B153E0] hover:bg-[#9d3fd4] dark:bg-[#B153E0] dark:hover:bg-[#9d3fd4] text-white shadow-lg shadow-[#B153E0]/25 transition-all duration-200"
+                      >
+                        Okay
                       </button>
                     </div>
-                  </Dialog.Title>
-                  <div className="border-b border-t border-black/20 dark:border-gray-300/20 py-3 px-6">
-                    <div className="flex flex-col items-center ">
-                      <img
-                        src="/Festive flags and hands with decorations.png"
-                        alt=""
-                      />
-                      <p className="text-xl font-bold text-heading dark:text-darkHeading">
-                        অভিনন্দন!
-                      </p>
-                      <p className="text-paragraph dark:text-darkParagraph text-sm text-center mt-1 font-bold">
-                        তুমি সফলভাবে কোর্সটি পারচেস করতে পেরেছ! প্রোগ্রামিং এ
-                        তোমার আগ্রহ দেখে আমরা অন্ত্যন্ত খুশি। এখন শুধু প্রয়োজন
-                        ডেডিকেশন এর সাথে লেগে থাকা, ক্লাস গুলো ঠিক মত করা সাথে
-                        এসাইনমেন্ট কুইজ ও প্রোগ্রামিং প্রব্লেম সলভের মাধ্যমে
-                        নিজেকে একজন দক্ষ প্রোগ্রামার করে গড়ে তোলা। আর তোমাকে
-                        সর্বাত্নক হেল্প করতে পাশে আছি আমরা কোডার ভাই পরিবার!
-                      </p>
-                    </div>
-
-                    {/* after purchase tasks */}
-                    <p className="text-heading dark:text-darkHeading text-lg my-3 font-semibold ">
-                      এখন তোমার কি করনীয়
-                    </p>
-                    <div className="flex gap-4 items-center">
-                      <div className="relative">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            1
-                          </p>
-                        </div>
-                        {/* <div className="w-[2px] h-[50%] bg-white absolute top-[50%] left-[50%] "></div> */}
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        প্রথমত আমাদের ফেসবুক প্রাইভেট গ্রুপ ও Discord Server এ
-                        জয়েন হওয়ার জন্য তোমার ফোনে পাঠানো ACCESS CODE টি Copy
-                        করে বাকি ইনফরমেশন দিয়ে রিকোয়েস্ট দাও। ২৪ ঘন্টার মধ্যে
-                        অ্যাপ্রুভ করা হবে।
-                      </p>
-                    </div>
-
-                    {accessCode && (
-                      <div className="flex items-center gap-4 mt-4 mb-4 bg-gray-200/10 p-4 rounded-lg">
-                        <div className="flex-1">
-                          <p className="text-sm mb-2 text-heading dark:text-darkHeading">
-                            আপনার ACCESS CODE:
-                          </p>
-                          <p className="font-mono text-lg text-heading dark:text-darkHeading">
-                            {accessCode}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(accessCode);
-                            toast.success("Access code copied!");
-                          }}
-                          className="bg-[#B153E0]/20 hover:bg-[#B153E0]/30 p-2 rounded-lg transition-colors"
-                        >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M16 12.9V17.1C16 20.6 14.6 22 11.1 22H6.9C3.4 22 2 20.6 2 17.1V12.9C2 9.4 3.4 8 6.9 8H11.1C14.6 8 16 9.4 16 12.9Z"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M22 6.9V11.1C22 14.6 20.6 16 17.1 16H16V12.9C16 9.4 14.6 8 11.1 8H8V6.9C8 3.4 9.4 2 12.9 2H17.1C20.6 2 22 3.4 22 6.9Z"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex gap-4 items-center my-4">
-                      <div className="z-[10]">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block z-[10]">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            2
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        যুক্ত হয়ে যাও আমাদের{" "}
-                        <a
-                          className="text-heading dark:text-darkHeading font-bold underline"
-                          href="https://www.facebook.com/groups/codervai.cp.batch03/"
-                          target="_blank"
-                        >
-                          ফেইসবুক প্রাইভেট গ্রুপে{" "}
-                        </a>
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center my-4">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            3
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        যুক্ত হয়ে যাও আমাদের{" "}
-                        <a
-                          className="text-heading dark:text-darkHeading font-bold underline"
-                          href="https://discord.gg/u3m7PAnfeq"
-                          target="_blank"
-                        >
-                          Discord Server এ{" "}
-                        </a>
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center my-4">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            4
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        ⁠আমাদের ওরিয়েন্টেশন ক্লাস হবে 10 April রাত ৯.৩০ এ
-                        ফেসবুক সিক্রেট গ্রুপে এবং ওয়েবসাইটেও।{" "}
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            5
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        ওয়েবসাইট থেকে লাইভ ক্লাস গুলো দেখার জন্য তোমার
-                        প্রোফাইলে লাইভ ক্লাস মেন্যুতে যেতে হবে।
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            6
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        কোর্স শুরু হওয়ার আগে C এবং C++ সম্পর্কে তোমরা এখান থেকে
-                        জেনে নিতে পারো। আগে থেকেই প্রিপেয়ার হয়ে গেলে !
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            7
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        Learn C from{" "}
-                        <a
-                          className="text-heading dark:text-darkHeading font-bold underline"
-                          href="https://www.w3schools.com/c/"
-                          target="_blank"
-                        >
-                          w3schools{" "}
-                        </a>
-                        and C++ from{" "}
-                        <a
-                          className="text-heading dark:text-darkHeading font-bold underline"
-                          href="https://www.w3schools.com/cpp/"
-                          target="_blank"
-                        >
-                          w3schools
-                        </a>
-                        !
-                      </p>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <div className="">
-                        <div className=" px-2 py-2 rounded-full bg-[#B153E0]/[.14] inline-block">
-                          <p className="px-4 py-1 rounded-full bg-[#B153E0]/[.32] font-bold text-xl inline-block">
-                            8
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-heading dark:text-darkHeading text-sm">
-                        কোর্স সম্পর্কে তোমার যাবতীয় যত জিজ্ঞাসা প্রশ্ন সব
-                        আমাদের ফেসবুক গ্রুপে পোস্ট করতে পারো বা ওয়েবসাইট
-                        সাপোর্ট মেন্যুতে গিয়ে টিকেট বানিয়ে আমাদের থেকে জেনে
-                        নিতে পারো।
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <button
-                      onClick={() => {
-                        setCoursePurchaseSuccessfull(false);
-                      }}
-                      className={`bg-purple hover:bg-opacity-50 ease-in-out duration-150  text-darkHeading py-3 w-full  rounded-xl font-bold`}
-                    >
-                      Okay
-                    </button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
@@ -1918,7 +1776,7 @@ export default function CourseDetailsPage() {
                   <h2 className="text-2xl lg:text-4xl font-semibold pb-12 relative z-10">
                     কোর্স ইন্সট্রাক্টর
                   </h2>
-                  {courseData.instructor_list.instructors.map((instructor) => (
+                  {(Array.isArray(courseData.instructor_list?.instructors) ? courseData.instructor_list.instructors : []).map((instructor) => (
                     <div
                       className=" my-7 rounded-xl cursor-pointer border border-purple/0 border-r-0 hover:border-r-1 hover:border-purple/30 duration-150 ease-in-out z-10"
                       key={Math.random()}
@@ -2037,7 +1895,7 @@ export default function CourseDetailsPage() {
 
                     <div className="max-w-[80vw] lg:max-w-[40vw] lgXl:max-w-[50vw] mx-auto">
                       <Slider {...settings}>
-                        {courseData.feedback_list.feedbacks.map(
+                        {(Array.isArray(courseData.feedback_list?.feedbacks) ? courseData.feedback_list.feedbacks : []).map(
                           (feedback: any) => (
                             <div
                               className="bg-gray-400/20 dark:bg-gray-300/10 backdrop-blur-lg rounded-lg p-6 "
@@ -2155,7 +2013,7 @@ export default function CourseDetailsPage() {
                     <p className="text-xl lg:text-3xl mb-8 font-semibold">
                       সচরাচর জানতে চাও প্রশ্নের উত্তর
                     </p>
-                    {courseData.faq_list.faqs.map((faq: any, index: any) => (
+                    {(Array.isArray(courseData.faq_list?.faqs) ? courseData.faq_list.faqs : []).map((faq: any, index: any) => (
                       <div
                         className="dark:bg-gray-200/5 bg-gray-400/20 border-gray-400/50 backdrop-blur-lg border dark:border-gray-200/20 mb-4 rounded-lg overflow-hidden"
                         key={Math.random()}
@@ -2363,7 +2221,7 @@ export default function CourseDetailsPage() {
                     এই কোর্সে তুমি পাচ্ছো
                   </p>
                   <div className="grid grid-cols-1 lg:grid-cols-2 mt-3 gap-y-1 gap-x-16">
-                    {courseData.you_get.you_get.split(",").map((item: any) => (
+                    {(typeof courseData.you_get?.you_get === "string" ? courseData.you_get.you_get.split(",") : []).map((item: any) => (
                       <div
                         className="flex gap-2 items-center"
                         key={Math.random()}
@@ -2770,7 +2628,7 @@ export default function CourseDetailsPage() {
                   )}
                   {courseData.isTaken ? (
                     <Link
-                      href="/course/"
+                      href={"/course/" + (router.query.courseId || "15")}
                       className=" flex justify-center text-darkHeading items-center bg-[#1CAB55] py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
                     >
                       কোর্সে যান
@@ -2801,7 +2659,7 @@ export default function CourseDetailsPage() {
                     )} */}
                     {/* {courseData.isTaken ? (
                       <Link
-                        href="/course/12"
+                        href={"/course/" + (router.query.courseId || "12")}
                         className=" flex justify-center text-darkHeading items-center bg-purple py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
                       >
                         কোর্স দেখুন
@@ -2825,7 +2683,7 @@ export default function CourseDetailsPage() {
                     {/* for post enrollment comment out this section */}
                     {/* {courseData.isTaken && (
                       <Link
-                        href="/course/"
+                        href={"/course/" + (router.query.courseId || "15")}
                         className=" flex justify-center text-darkHeading items-center bg-purple py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
                       >
                         কোর্স দেখুন

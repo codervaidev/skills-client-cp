@@ -189,7 +189,7 @@ export default function Nav({}: Props) {
 
               {isLogged ? (
                 <Link
-                  href="/course"
+                  href="/course/15"
                   className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                 >
                   রেকর্ডেড কন্টেন্ট
@@ -200,7 +200,7 @@ export default function Nav({}: Props) {
 
               {isLogged && isCP2Taken ? (
                 <Link
-                  href="/course-cp-2"
+                  href="/course/1"
                   className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                 >
                   CP 2.0 Progress
@@ -474,7 +474,7 @@ export default function Nav({}: Props) {
 
               {isLogged ? (
                 <Link
-                  href="/course"
+                  href="/course/15"
                   className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                 >
                   আপনার প্রোগ্রেস
@@ -485,7 +485,7 @@ export default function Nav({}: Props) {
 
               {isLogged && isCP2Taken ? (
                 <Link
-                  href="/course-cp-2"
+                  href="/course/1"
                   className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                 >
                   CP 2.0 Progress
