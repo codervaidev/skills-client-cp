@@ -40,6 +40,10 @@ import {
   CourseIntroIcon,
 } from "@/components/Icons";
 import AnimatedSuccessStories from "@/components/AnimatedSuccessStories";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { useHasPurchasedLmsPreferenceCourses } from "@/hooks/useHasPurchasedLmsPreferenceCourses";
+import LmsPreferenceModal from "@/components/LmsPreferenceModal";
+import { isLoggedIn } from "@/helpers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -80,9 +84,20 @@ export default function Home() {
   const [titlX, setTiltX] = useState(0);
   const [titlY, setTiltY] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const { lmsPreference, loading: lmsLoading, setLmsPreference, error: lmsError } = useLmsPreference();
+  const { hasPurchased: hasPurchasedLmsCourses, loading: enrolledLoading } = useHasPurchasedLmsPreferenceCourses();
 
   //get the top success stories
   const topSuccessStories = getTopSuccessStories(15);
+
+  // Only show LMS preference modal if user is logged in, has no preference yet, and has purchased at least one of the LMS preference courses (18, 15, 1)
+  const showLmsModal =
+    mounted &&
+    isLoggedIn() &&
+    lmsPreference === null &&
+    !lmsLoading &&
+    hasPurchasedLmsCourses &&
+    !enrolledLoading;
 
   const carouselSettings = {
     dots: true,
@@ -105,7 +120,12 @@ export default function Home() {
   return (
     <main className={`${HindSiliguri.variable} font-hind`}>
       <Nav></Nav>
-
+      <LmsPreferenceModal
+        isOpen={showLmsModal}
+        onClose={() => {}}
+        setLmsPreference={setLmsPreference}
+        error={lmsError}
+      />
       <Toaster />
 
       <FloatingCompiler />

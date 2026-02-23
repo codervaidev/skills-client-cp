@@ -42,15 +42,83 @@ function getCookie(name: string) {
   return null;
 }
 
+/** Set cookie with domain for cross-subdomain auth (e.g. .codervai.com). */
+export function setCookieWithDomain(
+  name: string,
+  value: string,
+  domain: string,
+  maxAgeSeconds: number = 7 * 24 * 3600
+) {
+  if (typeof document === "undefined") return;
+  const secure = typeof window !== "undefined" && window.location?.protocol === "https:" ? "; secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; domain=${domain}; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
+}
+
+/** Append token to URL using hash (#token=...) so it is not sent to the server. For cross-LMS redirects. */
+export function appendTokenToUrl(url: string, token: string | null): string {
+  if (!token || typeof token !== "string") return url;
+  const separator = url.includes("#") ? "&" : "#";
+  return `${url}${separator}token=${encodeURIComponent(token)}`;
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
+/** Extract and validate token from URL (hash #token= first, then query ?token=). Saves to localStorage and shared cookie, strips from URL. */
+export const extractTokenFromUrl = (): string | null => {
+  if (typeof window === "undefined") return null;
+
+  let token: string | null = null;
+  const hash = window.location.hash?.slice(1);
+  if (hash) {
+    const hashParams = new URLSearchParams(hash);
+    token = hashParams.get("token");
+  }
+  if (!token) {
+    token = new URLSearchParams(window.location.search).get("token");
+  }
+
+  if (token) {
+    try {
+      const decoded = jwtDecode<any>(token);
+      const hasValidStructure =
+        decoded &&
+        (decoded.name || decoded.email || decoded.user_id || decoded.sub || decoded.id);
+      const isNotExpired = decoded.exp && decoded.exp > Date.now() / 1000;
+
+      if (hasValidStructure && isNotExpired) {
+        localStorage.setItem("token", token);
+        setCookieWithDomain("token", token, ".codervai.com");
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("token");
+        url.hash = url.hash ? url.hash.replace(/\btoken=[^&]*&?/g, "").replace(/&$/, "") : "";
+        if (url.hash === "#") url.hash = "";
+        window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+
+        return token;
+      }
+    } catch (_) {}
+    const url = new URL(window.location.href);
+    url.searchParams.delete("token");
+    url.hash = url.hash ? url.hash.replace(/\btoken=[^&]*&?/g, "").replace(/&$/, "") : "";
+    if (url.hash === "#") url.hash = "";
+    window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+  }
+  return null;
+};
+
 export const isLoggedIn = () => {
   let token: any = "";
   if (typeof window !== "undefined") {
-    // Perform localStorage action
-
+    extractTokenFromUrl();
     token = getCookie("token");
     if (token) {
       localStorage.setItem("token", token);
     }
+    if (!token) token = localStorage.getItem("token");
   }
 
   if (!token || !checkTokenValidity(token)) {
@@ -72,7 +140,7 @@ function deleteCookieWithDomain(name: string, domain: string) {
 export const logout = () => {
   localStorage.removeItem("token");
   deleteCookie("token");
-  deleteCookieWithDomain("token", "codervai.com");
+  deleteCookieWithDomain("token", ".codervai.com");
   window.location.reload();
 };
 

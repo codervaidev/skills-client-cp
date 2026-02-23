@@ -12,6 +12,9 @@ import dynamic from "next/dynamic";
 import axios from "axios";
 import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
+import { appendTokenToUrl, getAuthToken } from "@/helpers";
 
 const TestComponent = dynamic(() => import("./TestComponent"), {
   ssr: false,
@@ -49,6 +52,7 @@ export default function Nav({}: Props) {
   const [user, setUser] = useContext<any>(UserContext);
   const [notificationsCount, setNotificationsCount] = useState<any>(0);
   const [isCP2Taken, setIsCP2Taken] = useState(false);
+  const { lmsPreference } = useLmsPreference();
 
   const fetchCP2 = () => {
     const token = localStorage.getItem("token");
@@ -188,23 +192,41 @@ export default function Nav({}: Props) {
               {/* )} */}
 
               {isLogged ? (
-                <Link
-                  href="/course"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
-                >
-                  রেকর্ডেড কন্টেন্ট
-                </Link>
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    রেকর্ডেড কন্টেন্ট
+                  </a>
+                ) : (
+                  <Link
+                    href="/course"
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    রেকর্ডেড কন্টেন্ট
+                  </Link>
+                )
               ) : (
                 ""
               )}
 
               {isLogged && isCP2Taken ? (
-                <Link
-                  href="/course-cp-2"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
-                >
-                  CP 2.0 Progress
-                </Link>
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={appendTokenToUrl(getCoursesDashboardUrl(COURSE_ID), getAuthToken())}
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 2.0 Progress
+                  </a>
+                ) : (
+                  <Link
+                    href="/course-cp-2"
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 2.0 Progress
+                  </Link>
+                )
               ) : (
                 ""
               )}
@@ -473,23 +495,41 @@ export default function Nav({}: Props) {
               )} */}
 
               {isLogged ? (
-                <Link
-                  href="/course"
-                  className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
-                >
-                  আপনার প্রোগ্রেস
-                </Link>
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    আপনার প্রোগ্রেস
+                  </a>
+                ) : (
+                  <Link
+                    href="/course"
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    আপনার প্রোগ্রেস
+                  </Link>
+                )
               ) : (
                 ""
               )}
 
               {isLogged && isCP2Taken ? (
-                <Link
-                  href="/course-cp-2"
-                  className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
-                >
-                  CP 2.0 Progress
-                </Link>
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={appendTokenToUrl(getCoursesDashboardUrl(COURSE_ID), getAuthToken())}
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 2.0 Progress
+                  </a>
+                ) : (
+                  <Link
+                    href="/course-cp-2"
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 2.0 Progress
+                  </Link>
+                )
               ) : (
                 ""
               )}

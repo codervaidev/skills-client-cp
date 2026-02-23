@@ -8,7 +8,10 @@ import { BsChevronRight } from "react-icons/bs";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { BACKEND_URL, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID_2, COURSE_ID } from "@/api.config";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { isLmsPreferenceCourse, getCoursesDashboardUrl } from "@/constants/lmsPreference";
+import { appendTokenToUrl, getAuthToken } from "@/helpers";
 import {
   apiConfig,
   calculateRemainingDays,
@@ -119,6 +122,8 @@ export default function CourseDetailsPage() {
     setActiveTab(temp);
   };
   const router = useRouter();
+  const courseIdFromRoute = router.query?.courseId as string | undefined;
+  const { lmsPreference } = useLmsPreference();
   const [user, setUser] = useContext<any>(UserContext);
   const [courseData, setCourseData] = useState({
     success: true,
@@ -2769,12 +2774,27 @@ export default function CourseDetailsPage() {
                     </div>
                   )}
                   {courseData.isTaken ? (
-                    <Link
-                      href="/course/"
-                      className=" flex justify-center text-darkHeading items-center bg-[#1CAB55] py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
-                    >
-                      কোর্সে যান
-                    </Link>
+                    lmsPreference === "unlocked" &&
+                    courseIdFromRoute &&
+                    isLmsPreferenceCourse(courseIdFromRoute) ? (
+                      <a
+                        href={appendTokenToUrl(getCoursesDashboardUrl(courseIdFromRoute), getAuthToken())}
+                        className=" flex justify-center text-darkHeading items-center bg-[#1CAB55] py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
+                      >
+                        কোর্সে যান
+                      </a>
+                    ) : (
+                      <Link
+                        href={
+                          courseIdFromRoute === COURSE_ID
+                            ? "/course-cp-2"
+                            : "/course/"
+                        }
+                        className=" flex justify-center text-darkHeading items-center bg-[#1CAB55] py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
+                      >
+                        কোর্সে যান
+                      </Link>
+                    )
                   ) : (
                     <button
                       onClick={() => {

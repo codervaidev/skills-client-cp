@@ -4,6 +4,8 @@ import { decryptString } from "@/helpers";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
 
 function findObjectById(data: any, targetId: any) {
   // Check if chapters exist in the data
@@ -113,8 +115,9 @@ export default function CourseRedirect(): JSX.Element {
   };
 
   useEffect(() => {
+    if (lmsLoading || lmsPreference === "unlocked") return;
     fetchCourse();
-  }, []);
+  }, [lmsLoading, lmsPreference]);
 
   return <></>;
 }
