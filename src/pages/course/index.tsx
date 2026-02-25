@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
-import { appendTokenToUrl, getAuthToken } from "@/helpers";
 
 function findObjectById(data: any, targetId: any) {
   // Check if chapters exist in the data
@@ -38,7 +37,7 @@ export default function CourseRedirect(): JSX.Element {
 
   useEffect(() => {
     if (!lmsLoading && lmsPreference === "unlocked") {
-      window.location.href = appendTokenToUrl(getCoursesDashboardUrl(COURSE_ID_2), getAuthToken());
+      window.location.href = getCoursesDashboardUrl(COURSE_ID_2);
       return;
     }
   }, [lmsPreference, lmsLoading]);

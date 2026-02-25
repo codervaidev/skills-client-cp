@@ -11,7 +11,6 @@ import "slick-carousel/slick/slick-theme.css";
 import { BACKEND_URL, COURSE_ID_2, COURSE_ID } from "@/api.config";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { isLmsPreferenceCourse, getCoursesDashboardUrl } from "@/constants/lmsPreference";
-import { appendTokenToUrl, getAuthToken } from "@/helpers";
 import {
   apiConfig,
   calculateRemainingDays,
@@ -30,9 +29,10 @@ import jwtDecode from "jwt-decode";
 import Button from "@/components/Button";
 import GradientButton from "@/components/GradientButton";
 import { ButtonBase } from "@mui/material";
-import Lottie from "react-lottie";
-import celebrationLottieData from "./Animation - 1711894031153.json";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+
+const CelebrationLottie = dynamic(() => import("@/components/CelebrationLottie"), { ssr: false });
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
@@ -59,15 +59,6 @@ const settings = {
       },
     },
   ],
-};
-
-const lottieOptions = {
-  loop: true,
-  autoplay: true,
-  animationData: celebrationLottieData,
-  rendererSettings: {
-    preserveAspectRatio: "xMidYMid slice",
-  },
 };
 
 export default function CourseDetailsPage() {
@@ -411,17 +402,17 @@ export default function CourseDetailsPage() {
         <div>
           {/* forpc */}
           <div className="absolute  hidden lg:block right-0 top-0 z-[999999]">
-            <Lottie options={lottieOptions} height={"50vh"} width={"30vw"} />
+            <CelebrationLottie height={"50vh"} width={"30vw"} />
           </div>
           <div className="absolute hidden lg:block  left-0 bottom-0 z-[999999]">
-            <Lottie options={lottieOptions} height={"50vh"} width={"30vw"} />
+            <CelebrationLottie height={"50vh"} width={"30vw"} />
           </div>
           {/* forPhones */}
           <div className="absolute lg:hidden  right-0 top-0 z-[999999]">
-            <Lottie options={lottieOptions} height={400} width={400} />
+            <CelebrationLottie height={400} width={400} />
           </div>
           <div className="absolute  lg:hidden left-0 bottom-0 z-[999999]">
-            <Lottie options={lottieOptions} height={400} width={400} />
+            <CelebrationLottie height={400} width={400} />
           </div>
         </div>
       )}
@@ -2778,7 +2769,7 @@ export default function CourseDetailsPage() {
                     courseIdFromRoute &&
                     isLmsPreferenceCourse(courseIdFromRoute) ? (
                       <a
-                        href={appendTokenToUrl(getCoursesDashboardUrl(courseIdFromRoute), getAuthToken())}
+                        href={getCoursesDashboardUrl(courseIdFromRoute)}
                         className=" flex justify-center text-darkHeading items-center bg-[#1CAB55] py-3 w-full mt-8 rounded-xl hover:bg-opacity-50 ease-in-out duration-150"
                       >
                         কোর্সে যান

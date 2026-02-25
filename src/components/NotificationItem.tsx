@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { isLmsPreferenceCourse, getCoursesLmsUrl } from "@/constants/lmsPreference";
-import { appendTokenToUrl, getAuthToken } from "@/helpers";
 
 type Props = {
   populateFn: (notification: any) => void;
@@ -124,7 +123,7 @@ export default function NotificationItem({
               }
             } else if (notification.type === "THREADS") {
               if (lmsPreference === "unlocked" && courseId && isLmsPreferenceCourse(courseId) && chapterId != null && moduleId != null) {
-                window.location.href = appendTokenToUrl(getCoursesLmsUrl(courseId, Number(chapterId), Number(moduleId)) + `?discussionId=${notification?.data?.moduleData?.discussionId || ""}`, getAuthToken());
+                window.location.href = getCoursesLmsUrl(courseId, Number(chapterId), Number(moduleId)) + `?discussionId=${notification?.data?.moduleData?.discussionId || ""}`;
               } else {
                 router.push(
                   `/course/${chapterId}/${moduleId}?discussionId=${notification?.data?.moduleData?.discussionId}`,
@@ -134,7 +133,7 @@ export default function NotificationItem({
 
             if (notification.type === "COURSE_UPDATE") {
               if (lmsPreference === "unlocked" && courseId && isLmsPreferenceCourse(courseId) && chapterId != null) {
-                window.location.href = appendTokenToUrl(getCoursesLmsUrl(courseId, Number(chapterId)), getAuthToken());
+                window.location.href = getCoursesLmsUrl(courseId, Number(chapterId));
               } else {
                 router.push(`/course/${chapterId}/`);
               }

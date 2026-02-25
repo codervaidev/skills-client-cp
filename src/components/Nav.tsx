@@ -14,7 +14,6 @@ import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
-import { appendTokenToUrl, getAuthToken } from "@/helpers";
 
 const TestComponent = dynamic(() => import("./TestComponent"), {
   ssr: false,
@@ -52,7 +51,11 @@ export default function Nav({}: Props) {
   const [user, setUser] = useContext<any>(UserContext);
   const [notificationsCount, setNotificationsCount] = useState<any>(0);
   const [isCP2Taken, setIsCP2Taken] = useState(false);
+  const [isCP3Taken, setIsCP3Taken] = useState(false);
   const { lmsPreference } = useLmsPreference();
+
+  // User is enrolled in at least one course
+  const isEnrolled = isCP2Taken || isCP3Taken;
 
   const fetchCP2 = () => {
     const token = localStorage.getItem("token");
@@ -65,6 +68,24 @@ export default function Nav({}: Props) {
       .then((res) => {
         if (res.data.isTaken) {
           setIsCP2Taken(true);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const fetchCP3 = () => {
+    const token = localStorage.getItem("token");
+    axios
+      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        if (res.data.isTaken) {
+          setIsCP3Taken(true);
         }
       })
       .catch((err) => {
@@ -99,6 +120,7 @@ export default function Nav({}: Props) {
       fetchScore();
       fetchNotificationsCount();
       fetchCP2();
+      fetchCP3();
     } else {
       setIsLoggedIn(false);
     }
@@ -183,28 +205,37 @@ export default function Nav({}: Props) {
                 />
               </Link>
               {/* {isLogged && ( */}
-              <Link
-                href="/course-details/15"
+              <a
+                href="https://courses.codervai.com/course-details/15"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
               >
                 কোর্স ডিটেইলস
-              </Link>
+              </a>
               {/* )} */}
 
-              {isLogged ? (
+              <Link
+                href="/success-story"
+                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+              >
+                সাকসেস স্টোরি
+              </Link>
+
+              {isLogged && isEnrolled ? (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
-                    রেকর্ডেড কন্টেন্ট
+                    ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
                     href="/course"
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
-                    রেকর্ডেড কন্টেন্ট
+                    ক্লাস সমূহ
                   </Link>
                 )
               ) : (
@@ -214,7 +245,7 @@ export default function Nav({}: Props) {
               {isLogged && isCP2Taken ? (
                 lmsPreference === "unlocked" ? (
                   <a
-                    href={appendTokenToUrl(getCoursesDashboardUrl(COURSE_ID), getAuthToken())}
+                    href={getCoursesDashboardUrl(COURSE_ID)}
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     CP 2.0 Progress
@@ -231,7 +262,7 @@ export default function Nav({}: Props) {
                 ""
               )}
 
-              {isLogged && (
+              {isLogged && isEnrolled && (
                 <Link
                   href="/live-class"
                   className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
@@ -248,12 +279,14 @@ export default function Nav({}: Props) {
                   র‍্যাঙ্কিং
                 </Link>
               )} */}
-              <Link
-                href="/contests/lists"
-                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
-              >
-                প্রতিযোগিতাসমূহ
-              </Link>
+              {isLogged && isEnrolled && (
+                <Link
+                  href="/contests/lists"
+                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                >
+                  প্রতিযোগিতাসমূহ
+                </Link>
+              )}
             </div>
 
             {isLogged ? (
@@ -494,20 +527,27 @@ export default function Nav({}: Props) {
                 </Link>
               )} */}
 
-              {isLogged ? (
+              <Link
+                href="/success-story"
+                className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+              >
+                সাকসেস স্টোরি
+              </Link>
+
+              {isLogged && isEnrolled ? (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
-                    আপনার প্রোগ্রেস
+                    ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
                     href="/course"
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
-                    আপনার প্রোগ্রেস
+                    ক্লাস সমূহ
                   </Link>
                 )
               ) : (
@@ -517,7 +557,7 @@ export default function Nav({}: Props) {
               {isLogged && isCP2Taken ? (
                 lmsPreference === "unlocked" ? (
                   <a
-                    href={appendTokenToUrl(getCoursesDashboardUrl(COURSE_ID), getAuthToken())}
+                    href={getCoursesDashboardUrl(COURSE_ID)}
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     CP 2.0 Progress

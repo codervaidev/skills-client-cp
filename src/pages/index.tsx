@@ -142,64 +142,124 @@ export default function Home() {
 
       <div className="bg-[#F3F3F3] dark:bg-black pt-20 overflow-x-hidden">
         <div className="w-[90%] lg:w-[80%] mx-auto py-4 z-20">
-          <div className="flex justify-between items-center flex-col-reverse lg:flex-row gap-20 pt-10 lg:pt-0 relative ">
+          <div className="flex justify-between items-center flex-col-reverse lg:flex-row gap-12 lg:gap-20 pt-10 lg:pt-0 relative min-h-[70vh] lg:min-h-[80vh]">
             <GradientEllipse1 />
 
             <GradientEllipse2 />
 
+            {/* Hero Left Content */}
             <div
-              className="text-heading dark:text-darkHeading flex flex-col gap-4 z-10"
-              style={{ width: "400px" }}
+              className="text-heading dark:text-darkHeading flex flex-col gap-5 z-10 hero-content-enter w-full lg:max-w-[540px]"
             >
-              <p className="text-[#B153E0]">কম্পেটিটিভ প্রোগ্রামিং কোর্স</p>
-              <div>
-                <h2 className="text-2xl lg:text-4xl">
-                  <div className="min-w-0 w-full">
-                    <h2 className="text-2xl lg:text-4xl relative">
-                      <div
-                        className="typewriter-container"
-                        style={{
-                          minWidth: "500px",
-                          whiteSpace: "normal",
-                          overflowWrap: "break-word",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        <Typewriter
-                          options={{
-                            strings: [
-                              'Competitive Programming <span class="text-[#B153E0]">3.0</span> TurboCharged',
-                            ],
-                            autoStart: true,
-                            loop: true,
-                            delay: 75,
-                            deleteSpeed: 50,
-                            cursor: "|",
-                            wrapperClassName: "typewriter-wrapper",
-                          }}
-                        />
-                      </div>
-                    </h2>
-                  </div>
-                </h2>
+              {/* Badge */}
+              <div className="inline-flex">
+                <span className="inline-flex items-center gap-2 bg-[#B153E0]/10 dark:bg-[#B153E0]/20 border border-[#B153E0]/30 text-[#B153E0] text-sm font-semibold px-4 py-1.5 rounded-full">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B153E0] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#B153E0]"></span>
+                  </span>
+                  ব্যাচ ০৩ — এনরোলমেন্ট চলছে
+                </span>
               </div>
 
-              <p className="">
-                প্রতিযোগিতামূলক প্রোগ্রামিং শিখে নাও বিশ্বসেরা দেশসেরা সব
-                প্রোগ্রামার দের হাত ধরে
+              {/* Title */}
+              <div>
+                <div className="min-w-0 w-full">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight relative">
+                    <div
+                      className="typewriter-container"
+                      style={{
+                        minWidth: "300px",
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      <Typewriter
+                        options={{
+                          strings: [
+                            'Competitive Programming <span class="text-[#B153E0]">3.0</span> TurboCharged',
+                          ],
+                          autoStart: true,
+                          loop: true,
+                          delay: 75,
+                          deleteSpeed: 50,
+                          cursor: "|",
+                          wrapperClassName: "typewriter-wrapper",
+                        }}
+                      />
+                    </div>
+                  </h1>
+                </div>
+              </div>
+
+              {/* Subtitle */}
+              <p className="text-paragraph dark:text-darkParagraph text-base lg:text-lg leading-relaxed max-w-[480px]">
+                বিশ্বসেরা প্রোগ্রামার ও Googler দের হাত ধরে জিরো থেকে ACM ICPC
+                লেভেলের কম্পেটিটিভ প্রোগ্রামিং শিখো। ৫০+ ঘণ্টার ভিডিও, ৩০০+
+                প্রব্লেম ও লাইভ ক্লাস সাপোর্ট।
               </p>
-              <div className="flex">
-                <Link
-                  href="/course-details/15"
-                  className="flex gap-4 items-center bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 shadow-md py-3 px-8 rounded-lg border-2 border-[#B153E0]"
+
+              {/* Dual CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-1">
+                {/* Primary CTA - Enroll Now */}
+                <a
+                  href="https://courses.codervai.com/course-details/15"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hero-cta-primary group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#B153E0] to-[#8B2FC9] hover:from-[#C76BF0] hover:to-[#9B3FD9] text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-[#B153E0]/25 hover:shadow-xl hover:shadow-[#B153E0]/40 transition-all duration-300 ease-in-out transform hover:scale-[1.03] active:scale-95"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 5L20 12L13 19M4 12H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-base">এখনই এনরোল করো</span>
+                </a>
+
+                {/* Secondary CTA - Free Preview */}
+                <a
+                  href="https://courses.codervai.com/course-details/15"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center justify-center gap-3 border-2 border-[#B153E0] text-[#B153E0] hover:bg-[#B153E0]/10 font-semibold py-3.5 px-8 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-[1.03] active:scale-95"
                 >
                   <VideoPlayIcon />
-                  <p className="text-white font-semibold text-base">
-                    কোর্স এর বিস্তারিত জেনে নাও
-                  </p>
-                </Link>
+                  <span className="text-base text-heading dark:text-darkHeading">ফ্রি প্রিভিউ দেখো</span>
+                </a>
+              </div>
+
+              {/* Trust Stats */}
+              <div className="flex flex-wrap gap-6 mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-[#B153E0]/10 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21V19C17 16.79 15.21 15 13 15H5C2.79 15 1 16.79 1 19V21M23 21V19C22.99 17.7 22.22 16.55 21.08 16.13M16 3.13C17.16 3.55 17.94 4.72 17.94 6.06C17.94 7.4 17.16 8.57 16 8.99M9 11C11.21 11 13 9.21 13 7C13 4.79 11.21 3 9 3C6.79 3 5 4.79 5 7C5 9.21 6.79 11 9 11Z" stroke="#B153E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold leading-tight">২০০০+</p>
+                    <p className="text-xs text-paragraph dark:text-darkParagraph">শিক্ষার্থী</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-[#B153E0]/10 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22ZM10 8L16 12L10 16V8Z" stroke="#B153E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold leading-tight">৫০+</p>
+                    <p className="text-xs text-paragraph dark:text-darkParagraph">ঘণ্টার ভিডিও</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-[#B153E0]/10 flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#B153E0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold leading-tight">৪.৯/৫</p>
+                    <p className="text-xs text-paragraph dark:text-darkParagraph">রেটিং</p>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Hero Right - Success Stories */}
             <div className="w-full max-w-md mx-auto relative lg:top-10">
               {mounted && <AnimatedSuccessStories stories={topSuccessStories} />}
             </div>
@@ -312,12 +372,14 @@ export default function Home() {
                   ব্যাচ ০৩ এ প্রিবুকিং
                 </span>{" "}
                 চলছে, এখনি{" "}
-                <Link
-                  href="/course-details/15"
+                <a
+                  href="https://courses.codervai.com/course-details/15"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[#B153E0] font-semibold"
                 >
                   রেজিস্টার
-                </Link>{" "}
+                </a>{" "}
                 করে ফেলো!
               </p>
             </div>

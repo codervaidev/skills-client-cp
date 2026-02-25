@@ -31,6 +31,7 @@ function findObjectById(data: any, targetId: any) {
 export default function CourseRedirect(): JSX.Element {
   const [user, setUser] = useContext<any>(UserContext);
   const router = useRouter();
+  const { lmsPreference, loading: lmsLoading } = useLmsPreference();
   let activeModule: any = null;
   let courseData: any = {};
 

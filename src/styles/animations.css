@@ -1,3 +1,50 @@
+/* Hero section entrance animations */
+
+@keyframes heroContentEnter {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-content-enter {
+  animation: heroContentEnter 0.8s ease-out forwards;
+}
+
+.hero-cta-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-cta-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 60%
+  );
+  animation: ctaShine 3s infinite;
+}
+
+@keyframes ctaShine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
 /* Custom animation keyframes for success story cards */
 
 @keyframes float {

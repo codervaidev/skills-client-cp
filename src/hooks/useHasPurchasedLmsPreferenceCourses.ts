@@ -34,7 +34,7 @@ export function useHasPurchasedLmsPreferenceCourses(): {
       );
       const courses = res.data?.data ?? [];
       const hasAny = courses.some((c) =>
-        LMS_PREFERENCE_COURSE_IDS.includes(String(c.id))
+        (LMS_PREFERENCE_COURSE_IDS as readonly string[]).includes(String(c.id))
       );
       setHasPurchased(hasAny);
     } catch {
