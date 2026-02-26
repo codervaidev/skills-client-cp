@@ -2,6 +2,8 @@ import { BACKEND_URL } from "@/api.config";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { isLmsPreferenceCourse, getCoursesLmsUrl } from "@/constants/lmsPreference";
 
 type Props = {
   populateFn: (notification: any) => void;
@@ -44,8 +46,12 @@ export default function NotificationItem({
   notification,
 }: Props) {
   const router = useRouter();
+  const { lmsPreference } = useLmsPreference();
   const [isReadState, setIsReadState] = useState(notification.is_read);
   const [mouseIn, setMouseIn] = useState(false);
+  const courseId = notification.course_id != null ? String(notification.course_id) : undefined;
+  const chapterId = notification?.data?.moduleData?.chapterId;
+  const moduleId = notification?.data?.moduleData?.moduleId;
   const readNotification = (notification: any): void => {
     const token = localStorage.getItem("token");
 
@@ -110,20 +116,27 @@ export default function NotificationItem({
                 "&token=" +
                 token;
             } else if (notification.type === "ASSIGNMENT") {
-              router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}`,
-              );
+              if (lmsPreference === "unlocked" && courseId && isLmsPreferenceCourse(courseId) && chapterId != null && moduleId != null) {
+                window.location.href = getCoursesLmsUrl(courseId, Number(chapterId), Number(moduleId));
+              } else {
+                router.push(`/course/${chapterId}/${moduleId}`);
+              }
             } else if (notification.type === "THREADS") {
-              router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/${notification?.data?.moduleData?.moduleId}?discussionId=${notification?.data?.moduleData?.discussionId}`,
-              );
+              if (lmsPreference === "unlocked" && courseId && isLmsPreferenceCourse(courseId) && chapterId != null && moduleId != null) {
+                window.location.href = getCoursesLmsUrl(courseId, Number(chapterId), Number(moduleId)) + `?discussionId=${notification?.data?.moduleData?.discussionId || ""}`;
+              } else {
+                router.push(
+                  `/course/${chapterId}/${moduleId}?discussionId=${notification?.data?.moduleData?.discussionId}`,
+                );
+              }
             }
-            
 
             if (notification.type === "COURSE_UPDATE") {
-              router.push(
-                `/course/${notification?.data?.moduleData?.chapterId}/`,
-              );
+              if (lmsPreference === "unlocked" && courseId && isLmsPreferenceCourse(courseId) && chapterId != null) {
+                window.location.href = getCoursesLmsUrl(courseId, Number(chapterId));
+              } else {
+                router.push(`/course/${chapterId}/`);
+              }
             }
             if (notification.type !== "COURSE_UPDATE") {
               readNotification(notification);

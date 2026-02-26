@@ -6,7 +6,7 @@ import { BACKEND_URL } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { capitalizeFirstWord, isLoggedIn } from "@/helpers";
+import { capitalizeFirstWord, isLoggedIn, setCookieWithDomain } from "@/helpers";
 
 type Props = {};
 
@@ -32,7 +32,9 @@ export default function RegisterPage({}: Props) {
         password: userData.password,
       })
       .then((res) => {
-        localStorage.setItem("token", res.data.token);
+        const token = res.data.token;
+        localStorage.setItem("token", token);
+        setCookieWithDomain("token", token, ".codervai.com");
         setUser({ ...user, loading: false });
         setErrorMsg("");
         router.push("/course-details/12");
