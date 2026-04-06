@@ -6,7 +6,7 @@ import { BACKEND_URL } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { isLoggedIn } from "@/helpers";
+import { isLoggedIn, setCookieWithDomain } from "@/helpers";
 import Button from "@/components/Button";
 import bcrypt from "bcryptjs-react";
 
@@ -67,7 +67,9 @@ export default function RegisterPage({}: Props) {
             },
           })
           .then((res) => {
-            localStorage.setItem("token", res.data.token);
+            const token = res.data.token;
+            localStorage.setItem("token", token);
+            setCookieWithDomain("token", token, ".codervai.com");
             setSubmitButtonLoading(false);
             router.push("/course-details/12");
           })
