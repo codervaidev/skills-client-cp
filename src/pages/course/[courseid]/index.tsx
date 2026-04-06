@@ -1,10 +1,12 @@
-import { BACKEND_URL } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { decryptString } from "@/helpers";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import LMSSkeleton from "@/components/LMSSkeleton";
+import { useLmsPreference } from "@/hooks/useLmsPreference";
+import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
 
 function findObjectById(data: any, targetId: any) {
   const chapters = data?.chapters || [];
@@ -23,8 +25,58 @@ export default function CourseRedirect(): JSX.Element {
   const [user, setUser] = useContext<any>(UserContext);
   const router = useRouter();
   const courseid = router.query.courseid as string;
+  const { lmsPreference, loading: lmsLoading } = useLmsPreference();
   let activeModule: any = null;
   let courseData: any = {};
+
+  const redirectHome = () => {
+    router.replace("/");
+  };
+
+  const checkCourseAccess = async () => {
+    if (!courseid) return;
+
+    if (courseid !== COURSE_ID && courseid !== COURSE_ID_2) {
+      redirectHome();
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      redirectHome();
+      return;
+    }
+
+    try {
+      const enrolledRes = await axios.get(
+        `${BACKEND_URL}/user/course/getEnrolledCoursesByUserId`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const enrolledCourses = enrolledRes.data?.data ?? [];
+      const hasAccess = enrolledCourses.some(
+        (course: any) => String(course.id) === courseid,
+      );
+
+      if (!hasAccess) {
+        redirectHome();
+        return;
+      }
+
+      if (lmsPreference === "unlocked") {
+        window.location.href = getCoursesDashboardUrl(courseid);
+        return;
+      }
+
+      fetchCourse();
+    } catch (err) {
+      redirectHome();
+    }
+  };
 
   const fetchCourse = () => {
     if (!courseid) return;
@@ -86,8 +138,9 @@ export default function CourseRedirect(): JSX.Element {
   };
 
   useEffect(() => {
-    if (router.isReady && courseid) fetchCourse();
-  }, [router.isReady, courseid]);
+    if (lmsLoading) return;
+    if (router.isReady && courseid) checkCourseAccess();
+  }, [router.isReady, courseid, lmsLoading, lmsPreference]);
 
   return <LMSSkeleton />;
 }
