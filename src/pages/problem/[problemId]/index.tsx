@@ -4,7 +4,7 @@ import Link from "next/link";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { dracula } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import Editor from "@monaco-editor/react";
-import { useContext, useEffect, useState, Fragment } from "react";
+import { useContext, useEffect, useState, Fragment, useMemo } from "react";
 import { UserContext } from "@/Contexts/UserContext";
 import { BACKEND_URL } from "@/api.config";
 import axios from "axios";
@@ -216,6 +216,17 @@ int main(){
     fetchModule();
     fetchSubmissions();
   }, [router.query.problemId]);
+
+  const returnToModulePath = useMemo(() => {
+    const problemId = router.query.problemId as string | undefined;
+    const chapterId = router.query.chapterId as string | undefined;
+    const course = router.query.course as string | undefined;
+
+    if (!problemId || !chapterId || !course) return null;
+    if (course !== "course" && course !== "course-cp-2") return null;
+
+    return `/${course}/${chapterId}/${problemId}`;
+  }, [router.query.problemId, router.query.chapterId, router.query.course]);
 
   return (
     <ProtectedRoute>
@@ -893,15 +904,19 @@ int main(){
                 </div> */}
 
                   <div className="flex gap-4 mt-8 flex-col md:flex-row  justify-between items-center">
-                    <Link
-                      href={""}
+                    <button
+                      type="button"
                       onClick={() => {
-                        router.back();
+                        if (returnToModulePath) {
+                          router.push(returnToModulePath);
+                        } else {
+                          router.back();
+                        }
                       }}
                       className="py-2 px-6 bg-[#532e62] hover:opacity-75 ease-in-out duration-150 focus:ring ring-gray-300/80  rounded font-semibold text-white text-lg "
                     >
                       Return to Module Page
-                    </Link>
+                    </button>
                     <div className="flex gap-4">
                       <button
                         onClick={() => {

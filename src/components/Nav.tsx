@@ -60,13 +60,14 @@ export default function Nav({}: Props) {
   const fetchCP2 = () => {
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
+      .get(BACKEND_URL + "/user/course/getfull-v2/" + COURSE_ID, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        if (res.data.isTaken) {
+        const courseResponse = res.data?.data ?? res.data;
+        if (courseResponse.isTaken) {
           setIsCP2Taken(true);
         }
       })
@@ -78,13 +79,14 @@ export default function Nav({}: Props) {
   const fetchCP3 = () => {
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
+      .get(BACKEND_URL + "/user/course/getfull-v2/" + COURSE_ID_2, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        if (res.data.isTaken) {
+        const courseResponse = res.data?.data ?? res.data;
+        if (courseResponse.isTaken) {
           setIsCP3Taken(true);
         }
       })

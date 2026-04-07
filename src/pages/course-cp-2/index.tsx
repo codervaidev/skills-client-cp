@@ -39,24 +39,25 @@ export default function CourseRedirect(): JSX.Element {
     setUser({ ...user, loading: true });
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
+      .get(BACKEND_URL + "/user/course/getfull-v2/" + COURSE_ID, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        courseData = res.data;
+        const courseResponse = res.data?.data ?? res.data;
+        courseData = courseResponse;
 
-        if (res.data.maxModuleSerialProgress === 0) {
+        if (courseResponse.maxModuleSerialProgress === 0) {
           submitProgress(
-            res.data.chapters[0].modules[0].id,
-            res.data.chapters[0].modules[0].score,
+            courseResponse.chapters[0].modules[0].id,
+            courseResponse.chapters[0].modules[0].score,
           );
         }
 
-        res.data.chapters.forEach((chapter: any) => {
+        courseResponse.chapters.forEach((chapter: any) => {
           chapter.modules.forEach((module: any) => {
-            if (module.serial === res.data.maxModuleSerialProgress + 1) {
+            if (module.serial === courseResponse.maxModuleSerialProgress + 1) {
               activeModule = module;
             }
           });
@@ -65,7 +66,7 @@ export default function CourseRedirect(): JSX.Element {
         setUser({ ...user, loading: false });
 
         if (activeModule === null) {
-          const chapters: Array<any> = res.data.chapters;
+          const chapters: Array<any> = courseResponse.chapters;
           const chapter = chapters[chapters.length - 1];
           const modules: Array<any> = chapter.modules;
           activeModule = modules[modules.length - 1];

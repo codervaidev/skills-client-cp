@@ -427,35 +427,36 @@ export default function CourseDetailsPage() {
     setUser({ ...user, loading: true });
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
+      .get(BACKEND_URL + "/user/course/getfull-v2/" + COURSE_ID, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        setCourseData(res.data);
-        if (res.data.maxModuleSerialProgress === 0) {
+        const courseResponse = res.data?.data ?? res.data;
+        setCourseData(courseResponse);
+        if (courseResponse.maxModuleSerialProgress === 0) {
           submitProgress(
-            res.data.chapters[0].modules[0].id,
-            res.data.chapters[0].modules[0].score,
+            courseResponse.chapters[0].modules[0].id,
+            courseResponse.chapters[0].modules[0].score,
           );
         }
 
         let targetModule: any = null;
         let lastValidModule: any = null;
 
-        res.data.chapters.forEach((chapter: any) => {
+        courseResponse.chapters.forEach((chapter: any) => {
           chapter.modules.forEach((module: any) => {
             if (
               module.id === parseInt(router.query.moduleid as string) &&
               module.chapter_id ===
               parseInt(router.query.chapterid as string) &&
-              module.serial <= res.data.maxModuleSerialProgress + 1
+              module.serial <= courseResponse.maxModuleSerialProgress + 1
             ) {
               targetModule = module;
             }
 
-            if (module.serial === res.data.maxModuleSerialProgress + 1) {
+            if (module.serial === courseResponse.maxModuleSerialProgress + 1) {
               lastValidModule = module;
             }
           });
@@ -469,7 +470,7 @@ export default function CourseDetailsPage() {
             `/course-cp-2/${lastValidModule.chapter_id}/${lastValidModule.id}`,
           );
         } else {
-          const chapters: Array<any> = res.data.chapters;
+          const chapters: Array<any> = courseResponse.chapters;
           const chapter = chapters[chapters.length - 1];
           const modules: Array<any> = chapter.modules;
           const validModule = modules[modules.length - 1];
@@ -523,17 +524,18 @@ export default function CourseDetailsPage() {
         )
         .then((res) => {
           axios
-            .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
+            .get(BACKEND_URL + "/user/course/getfull-v2/" + COURSE_ID, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             })
             .then((res) => {
-              setCourseData(res.data);
-              if (res.data.maxModuleSerialProgress === 0) {
+              const courseResponse = res.data?.data ?? res.data;
+              setCourseData(courseResponse);
+              if (courseResponse.maxModuleSerialProgress === 0) {
                 submitProgress(
-                  res.data.chapters[0].modules[0].id,
-                  res.data.chapters[0].modules[0].score,
+                  courseResponse.chapters[0].modules[0].id,
+                  courseResponse.chapters[0].modules[0].score,
                 );
               }
 
@@ -1222,7 +1224,7 @@ export default function CourseDetailsPage() {
 
                       <div className="mt-6">
                         <Link
-                          href={`/problem/${activeModule.id}`}
+                          href={`/problem/${activeModule.id}?chapterId=${activeModule.chapter_id}&course=course-cp-2`}
                           className="py-2 px-8 bg-[#532e62] hover:opacity-75 ease-in-out duration-150 focus:ring ring-gray-300/80  rounded font-semibold text-white text-lg "
                         >
                           Go to Problem Page

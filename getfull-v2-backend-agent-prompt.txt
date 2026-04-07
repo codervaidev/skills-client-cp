@@ -1,0 +1,210 @@
+Build only a new v2 endpoint for LMS and do not change any v1 behavior.
+
+Task
+Implement a new API endpoint for LMS:
+- Method: GET
+- Path: /user/course/getfull-v2/:courseId
+- Auth: Required (Bearer token)
+- Scope: LMS-only full data
+- Keep existing /user/course/getfull/:courseId untouched for now
+
+Requirements
+1) Access and authorization
+- Token is mandatory.
+- User must be authorized to access the course content for LMS (enrolled or explicitly allowed by current business rules).
+- If unauthorized or not enrolled, do not leak private module content.
+
+2) Response goals for v2
+- Return full chapter and module tree needed by LMS pages.
+- Include progression fields used by LMS routing and locking.
+- Include category-specific module payload needed for rendering module content in LMS.
+
+3) Do not modify v1
+- No schema changes to v1.
+- No behavior changes to v1.
+
+==================================================
+REQUEST FORMAT (v2)
+==================================================
+Method
+GET
+
+Path params
+- courseId: required, positive integer
+
+Headers
+- Authorization: Bearer <access_token> (required)
+- Accept: application/json
+
+Body
+- none
+
+Example request
+GET /user/course/getfull-v2/15
+Authorization: Bearer <token>
+Accept: application/json
+
+==================================================
+SUCCESS RESPONSE FORMAT (v2)
+==================================================
+HTTP 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 15,
+    "title": "Competitive Programming 3.0 TurboCharged",
+    "isTaken": true,
+    "maxModuleSerialProgress": 120,
+    "chapters": [
+      {
+        "id": 163,
+        "course_id": 15,
+        "title": "Introduction and Installation",
+        "serial": 1,
+        "phase": "easy",
+        "is_free": false,
+        "is_live": true,
+        "allowed_unlock": false,
+        "modules": [
+          {
+            "id": 1810,
+            "chapter_id": 163,
+            "title": "Motivation For Competitive programming",
+            "description": "<p></p>",
+            "serial": 1,
+            "score": 0,
+            "is_free": false,
+            "is_live": true,
+            "difficulty": null,
+            "metadata": null,
+            "will_evaluated": true,
+            "quiz_time_limit": null,
+            "quiz_attempt_limit": null,
+            "pdf_drive_link": null,
+            "assignment_question_doc_url": null,
+            "assignment_question_doc_type": null,
+            "data": {
+              "category": "VIDEO",
+              "videoHost": "Youtube",
+              "videoUrl": "https://example.com/video"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "uuid",
+    "timestamp": "2026-04-06T12:34:56.000Z"
+  }
+}
+
+Notes on required data keys for LMS
+- Top-level required by LMS:
+  - id, title, isTaken, maxModuleSerialProgress, chapters
+- Chapter-level required by LMS:
+  - id, title, serial, phase, is_free, is_live, allowed_unlock, modules
+- Module-level required by LMS:
+  - id, chapter_id, title, description, serial, score, is_free, is_live, difficulty, metadata, will_evaluated,
+    quiz_time_limit, quiz_attempt_limit, pdf_drive_link, assignment_question_doc_url, assignment_question_doc_type, data
+
+Module data object rules by category
+- Always required:
+  - data.category in [VIDEO, PDF, QUIZ, CODE, ASSIGNMENT, TEXT]
+
+- VIDEO:
+  - data.videoHost
+  - data.videoUrl
+
+- PDF:
+  - data.pdf_link OR equivalent URL field used by LMS viewer
+
+- QUIZ:
+  - data.quiz: array of objects with:
+    - question
+    - options (string[])
+    - answer (encrypted)
+    - explanation (encrypted)
+
+- CODE:
+  - data.is_cf (boolean)
+  - if is_cf is true:
+    - data.cf_url
+    - data.cf_name
+  - if is_cf is false:
+    - no cf fields required
+
+- ASSIGNMENT:
+  - keep category and assignment metadata needed by current assignment workflow
+
+- TEXT:
+  - category plus module.description can carry renderable content
+
+==================================================
+ERROR RESPONSE FORMAT (v2)
+==================================================
+All non-200 responses must follow this exact envelope:
+
+{
+  "success": false,
+  "version": "v2",
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable message",
+    "details": {
+      "field": "optional-field-name",
+      "reason": "optional-details"
+    }
+  },
+  "meta": {
+    "requestId": "uuid",
+    "timestamp": "2026-04-06T12:34:56.000Z"
+  }
+}
+
+Status code mapping
+1) 400 Bad Request
+- code: INVALID_PATH_PARAM
+- when courseId is missing, non-integer, or <= 0
+
+2) 401 Unauthorized
+- code: AUTH_REQUIRED
+- when Authorization header/token missing, invalid, or expired
+
+3) 403 Forbidden
+- code: COURSE_ACCESS_DENIED
+- when user is authenticated but not allowed to access LMS full content for this course
+
+4) 404 Not Found
+- code: COURSE_NOT_FOUND
+- when course does not exist
+
+5) 422 Unprocessable Entity
+- code: DATA_INTEGRITY_ERROR
+- when course exists but required LMS structure is malformed
+
+6) 429 Too Many Requests
+- code: RATE_LIMITED
+- when throttled by rate-limiter
+
+7) 500 Internal Server Error
+- code: INTERNAL_ERROR
+- unexpected server failure
+
+==================================================
+IMPLEMENTATION CHECKLIST
+==================================================
+- Add new route/controller/service for /user/course/getfull-v2/:courseId
+- Keep v1 route untouched
+- Enforce auth and authorization before preparing response payload
+- Return the defined response envelopes exactly
+- Add tests:
+  - 200 success for enrolled user
+  - 400 invalid courseId
+  - 401 missing/invalid token
+  - 403 not enrolled/not authorized
+  - 404 course not found
+  - 500 fallback handler shape
+- Ensure requestId is included in both success and error meta
