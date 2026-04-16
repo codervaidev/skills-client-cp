@@ -137,16 +137,7 @@ export default function Home() {
 
     fetchCourseData();
   }, [currentCourseId]);
-  const getEnrollmentValue = (label: string) => {
-    if (!courseData?.chips?.enrollment) return null;
-    const enrollment = courseData.chips.enrollment;
-    for (const key in enrollment) {
-      if (enrollment[key]?.label === label) {
-        return enrollment[key].value;
-      }
-    }
-    return null;
-  };
+
 
   const { lmsPreference, loading: lmsLoading, setLmsPreference, error: lmsError } = useLmsPreference();
   const { hasPurchased: hasPurchasedLmsCourses, loading: enrolledLoading } = useHasPurchasedLmsPreferenceCourses();
@@ -391,40 +382,23 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-10 lg:w-[60%] mx-auto">
-                  <TimelineItem
-                    icon={logo1}
-                    date={getEnrollmentValue("prebooking_start")}
-                    label="প্রিবুকিং শুরু"
-                  />
-                  <TimelineItem
-                    icon={logo2}
-                    date={getEnrollmentValue("prebooking_end")}
-                    label="প্রিবুকিং শেষ"
-                  />
-                  <TimelineItem
-                    icon={logo3}
-                    date={getEnrollmentValue("enrollment_start")}
-                    label="এনরোলমেন্ট শুরু"
-                    isHighlighted
-                  />
-                  <TimelineItem
-                    icon={logo4}
-                    date={getEnrollmentValue("enrollment_end")}
-                    label="এনরোলমেন্ট শেষ"
-                    isHighlighted
-                  />
-                  <TimelineItem
-                    icon={logo3}
-                    date={getEnrollmentValue("orientation_date")}
-                    label="ওরিয়েন্টেশন ক্লাস"
-                  />
-
-                  <TimelineItem
-                    // put a live class icon with svg
-                    icon={<TriangleIcon />}
-                    date={getEnrollmentValue("archive_date") || "এনরোলমেন্ট এর পর থেকে"}
-                    label="আর্কাইভ ক্লাস দেখতে পারবে"
-                  />
+                  {(() => {
+                    const icons = [logo1, logo2, logo3, logo4];
+                    return Object.entries(courseData.chips.enrollment).map(
+                      ([key, item]: [string, any], index) => {
+                        if (!item?.value) return null;
+                        return (
+                          <TimelineItem
+                            key={key}
+                            icon={icons[index % icons.length]}
+                            date={formatEnrollmentDate(item.value)}
+                            label={item.label || key}
+                            isHighlighted={key.includes("enrollment")}
+                          />
+                        );
+                      }
+                    );
+                  })()}
                 </div>
                 <p className="mt-8  text-gray-400 text-center">
                   তুমি যদি আগ্রহী হয়ে থাকো, আমাদের{" "}
