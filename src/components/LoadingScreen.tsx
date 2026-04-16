@@ -1,18 +1,22 @@
-import { Fragment, useRef, useState, useContext } from "react";
+import { Fragment, useRef, useContext } from "react";
+import { useRouter } from "next/router";
 import { Dialog, Transition } from "@headlessui/react";
-import CircularProgress from "@mui/material/CircularProgress";
 import { UserContext } from "@/Contexts/UserContext";
 
 type Props = {};
 
 export default function LoadingScreen({}: Props) {
-  const [user, setUser] = useContext<any>(UserContext);
+  const [user] = useContext<any>(UserContext);
+  const router = useRouter();
+  const isLMSRoute = router.pathname.startsWith("/course") && !router.pathname.startsWith("/course-details");
+  const isCourseDetailsRoute = router.pathname.startsWith("/course-details");
+  const showLoader = user.loading && !isLMSRoute && !isCourseDetailsRoute;
 
   const cancelButtonRef = useRef(null);
   return (
     <div>
       {" "}
-      <Transition.Root show={user.loading} as={Fragment}>
+      <Transition.Root show={showLoader} as={Fragment}>
         <Dialog
           as="div"
           className="relative "

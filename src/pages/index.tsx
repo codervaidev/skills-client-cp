@@ -21,7 +21,6 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
-import WhatsAppWidget from "@/components/WhatsAppWidget";
 
 import {
   Logo1,
@@ -42,6 +41,9 @@ import {
   CourseIntroIcon,
 } from "@/components/Icons";
 import AnimatedSuccessStories from "@/components/AnimatedSuccessStories";
+import CurriculumSummary from "@/components/CurriculumSummary";
+import StudyPlanLanding from "@/components/StudyPlanLanding";
+import GlobalStickyCTA from "@/components/GlobalStickyCTA";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { useHasPurchasedLmsPreferenceCourses } from "@/hooks/useHasPurchasedLmsPreferenceCourses";
 import LmsPreferenceModal from "@/components/LmsPreferenceModal";
@@ -135,6 +137,17 @@ export default function Home() {
 
     fetchCourseData();
   }, [currentCourseId]);
+  const getEnrollmentValue = (label: string) => {
+    if (!courseData?.chips?.enrollment) return null;
+    const enrollment = courseData.chips.enrollment;
+    for (const key in enrollment) {
+      if (enrollment[key]?.label === label) {
+        return enrollment[key].value;
+      }
+    }
+    return null;
+  };
+
   const { lmsPreference, loading: lmsLoading, setLmsPreference, error: lmsError } = useLmsPreference();
   const { hasPurchased: hasPurchasedLmsCourses, loading: enrolledLoading } = useHasPurchasedLmsPreferenceCourses();
 
@@ -178,6 +191,7 @@ export default function Home() {
         error={lmsError}
       />
       <Toaster />
+      <GlobalStickyCTA courseData={courseData} />
 
       <FloatingCompiler />
 
@@ -361,9 +375,9 @@ export default function Home() {
             </defs>
           </svg>
 
-          {courseData?.chips?.enrollment && (
+          {courseData?.chips && (
             <AnimationOnScroll animateIn="animate__fadeIn" animateOnce>
-              {/* Batch information section — data from chips.enrollment */}
+              {/* Add the new batch information section */}
               <div className="w-[90%] lg:w-[80%] mx-auto mt-24 text-heading dark:text-darkHeading py-20 z-10">
                 <div className="flex gap-8 md:gap-20 justify-center flex-col items-center lg:flex-row text-center">
                   <div className="relative">
@@ -377,25 +391,48 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-10 lg:w-[60%] mx-auto">
-                  {(() => {
-                    const icons = [logo1, logo2, logo3, logo4, logo1, logo2, logo3, logo4];
-                    return Object.entries(courseData.chips.enrollment).map(
-                      ([key, item]: [string, any], index) => {
-                        if (!item?.value) return null;
-                        return (
-                          <TimelineItem
-                            key={key}
-                            icon={icons[index % icons.length]}
-                            date={formatEnrollmentDate(item.value)}
-                            label={item.label || key}
-                          />
-                        );
-                      }
-                    );
-                  })()}
+                  <TimelineItem
+                    icon={logo1}
+                    date={getEnrollmentValue("prebooking_start")}
+                    label="প্রিবুকিং শুরু"
+                  />
+                  <TimelineItem
+                    icon={logo2}
+                    date={getEnrollmentValue("prebooking_end")}
+                    label="প্রিবুকিং শেষ"
+                  />
+                  <TimelineItem
+                    icon={logo3}
+                    date={getEnrollmentValue("enrollment_start")}
+                    label="এনরোলমেন্ট শুরু"
+                    isHighlighted
+                  />
+                  <TimelineItem
+                    icon={logo4}
+                    date={getEnrollmentValue("enrollment_end")}
+                    label="এনরোলমেন্ট শেষ"
+                    isHighlighted
+                  />
+                  <TimelineItem
+                    icon={logo3}
+                    date={getEnrollmentValue("orientation_date")}
+                    label="ওরিয়েন্টেশন ক্লাস"
+                  />
+
+                  <TimelineItem
+                    // put a live class icon with svg
+                    icon={<TriangleIcon />}
+                    date={getEnrollmentValue("archive_date") || "এনরোলমেন্ট এর পর থেকে"}
+                    label="আর্কাইভ ক্লাস দেখতে পারবে"
+                  />
                 </div>
-                <p className="mt-8 text-gray-400 text-center">
-                  তুমি যদি আগ্রহী হয়ে থাকো, এখনি{" "}
+                <p className="mt-8  text-gray-400 text-center">
+                  তুমি যদি আগ্রহী হয়ে থাকো, আমাদের{" "}
+                  <span className="text-[#B153E0] font-semibold">
+                    {courseData?.chips?.batch_name}
+                  </span>{" "}
+                  চলছে, এখনি{" "}
+
                   <a
                     href={`https://courses.codervai.com/course-details/${currentCourseId}`}
                     target="_blank"
@@ -1340,6 +1377,12 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* --- Curriculum Summary Section --- */}
+        <CurriculumSummary />
+
+        {/* --- Detailed Study Plan Section --- */}
+        <StudyPlanLanding courseData={courseData} />
 
         <div className="bg-[#ca65fd]/20 dark:bg-[#0B060D] z-30 relative">
           <AnimationOnScroll animateIn="animate__fadeIn" animateOnce>
@@ -3712,13 +3755,6 @@ export default function Home() {
 
         <Footer />
 
-        <WhatsAppWidget
-          phoneNumber="8801768976036"
-          name="CoderVai Team"
-          position="Online | Replies instantly"
-          welcomeMessage="আমরা এখানে একটিভ আছি! 👋 আপনাকে কিভাবে সাহায্য করতে পারি?"
-          avatar="/wasup.svg"
-        />
       </div>
     </main>
   );
