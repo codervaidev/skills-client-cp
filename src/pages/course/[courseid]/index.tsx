@@ -1,4 +1,4 @@
-import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2, COURSE_ID_3 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { decryptString } from "@/helpers";
 import axios from "axios";
@@ -36,7 +36,7 @@ export default function CourseRedirect(): JSX.Element {
   const checkCourseAccess = async () => {
     if (!courseid) return;
 
-    if (courseid !== COURSE_ID && courseid !== COURSE_ID_2) {
+    if (courseid !== COURSE_ID && courseid !== COURSE_ID_2 && courseid !== COURSE_ID_3) {
       redirectHome();
       return;
     }

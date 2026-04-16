@@ -1,4 +1,4 @@
-import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2, COURSE_ID_3 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { decryptString } from "@/helpers";
 import axios from "axios";
@@ -63,6 +63,14 @@ export default function CourseRedirect(): JSX.Element {
       const hasCP3 = enrolledCourses.some(
         (course: any) => String(course.id) === COURSE_ID_2,
       );
+      const hasCP4 = enrolledCourses.some(
+        (course: any) => String(course.id) === COURSE_ID_3,
+      );
+
+      if (hasCP4) {
+        router.replace(`/course/${COURSE_ID_3}`);
+        return;
+      }
 
       if (hasCP3) {
         if (lmsPreference === "unlocked") {
