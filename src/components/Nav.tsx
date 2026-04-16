@@ -10,7 +10,7 @@ type Props = {};
 
 import dynamic from "next/dynamic";
 import axios from "axios";
-import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2, COURSE_ID_3 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
@@ -50,43 +50,36 @@ export default function Nav({}: Props) {
   const [score, setScore] = useState(0);
   const [user, setUser] = useContext<any>(UserContext);
   const [notificationsCount, setNotificationsCount] = useState<any>(0);
-  const [isCP2Taken, setIsCP2Taken] = useState(false);
-  const [isCP3Taken, setIsCP3Taken] = useState(false);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const { lmsPreference } = useLmsPreference();
 
   // User is enrolled in at least one course
-  const isEnrolled = isCP2Taken || isCP3Taken;
+  const isEnrolled = enrolledCourseIds.length > 0;
 
-  const fetchCP2 = () => {
+  // Identify the latest course the user is enrolled in
+  // Order of priority: COURSE_ID_3 (18) > COURSE_ID_2 (15) > COURSE_ID (1)
+  const primaryCourseId = enrolledCourseIds.includes(COURSE_ID_3)
+    ? COURSE_ID_3
+    : enrolledCourseIds.includes(COURSE_ID_2)
+    ? COURSE_ID_2
+    : enrolledCourseIds.includes(COURSE_ID)
+    ? COURSE_ID
+    : null;
+
+  const secondaryCourseIds = enrolledCourseIds.filter(id => id !== primaryCourseId);
+
+  const fetchEnrolledCourses = () => {
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
+      .get(BACKEND_URL + "/user/course/getEnrolledCoursesByUserId", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        if (res.data.isTaken) {
-          setIsCP2Taken(true);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const fetchCP3 = () => {
-    const token = localStorage.getItem("token");
-    axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        if (res.data.isTaken) {
-          setIsCP3Taken(true);
-        }
+        const enrolled = res.data?.data ?? [];
+        const ids = enrolled.map((c: any) => String(c.id));
+        setEnrolledCourseIds(ids);
       })
       .catch((err) => {
         console.log(err);
@@ -117,45 +110,29 @@ export default function Nav({}: Props) {
     setToken(localStorage.getItem("token"));
     if (isLoggedIn()) {
       setIsLoggedIn(true);
-      fetchScore();
-      fetchNotificationsCount();
-      fetchCP2();
-      fetchCP3();
+      fetchEnrolledCourses();
     } else {
       setIsLoggedIn(false);
     }
 
-    const isSystemDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
     const pastPreference = localStorage.getItem("darkMode");
 
     if (pastPreference) {
       if (pastPreference == "true") {
         setDarkMode(true);
-        console.log("past ref true");
       } else {
         setDarkMode(false);
-        console.log("past ref false");
       }
     } else {
       setDarkMode(true);
-      console.log("system dark");
     }
-    // else if (isSystemDark) {
-    //   setDarkMode(true);
-    //   console.log("system dark");
-    // }
   }, []);
 
-  useEffect(() => {
-    fetchScore();
-  }, [user.scoreTrigger]);
-
   const fetchScore = () => {
+    if (!primaryCourseId) return;
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getScore/" + (isCP2Taken ? COURSE_ID : COURSE_ID_2), {
+      .get(BACKEND_URL + "/user/course/getScore/" + primaryCourseId, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -166,9 +143,10 @@ export default function Nav({}: Props) {
       .catch((err) => {});
   };
   const fetchNotificationsCount = () => {
+    if (!primaryCourseId) return;
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/notification/count?courseId=" + (isCP2Taken ? COURSE_ID : COURSE_ID_2), {
+      .get(BACKEND_URL + "/user/notification/count?courseId=" + primaryCourseId, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -178,6 +156,14 @@ export default function Nav({}: Props) {
       })
       .catch((err) => {});
   };
+
+  // Re-fetch score & notifications whenever the primary course resolves or score changes
+  useEffect(() => {
+    if (primaryCourseId) {
+      fetchScore();
+      fetchNotificationsCount();
+    }
+  }, [primaryCourseId, user.scoreTrigger]);
 
   useEffect(() => {
     setUser({ ...user, darkMode: darkMode });
@@ -222,27 +208,43 @@ export default function Nav({}: Props) {
                 সাকসেস স্টোরি
               </Link>
 
-              {isLogged && isEnrolled ? (
+              {isLogged && primaryCourseId && (
                 lmsPreference === "unlocked" ? (
                   <a
-                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    href={getCoursesDashboardUrl(primaryCourseId)}
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
-                    href="/course"
+                    href={`/course/${primaryCourseId}`}
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     ক্লাস সমূহ
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
-              {isLogged && isCP2Taken ? (
+              {isLogged && enrolledCourseIds.includes(COURSE_ID_2) && primaryCourseId !== COURSE_ID_2 && (
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 3.0 Progress
+                  </a>
+                ) : (
+                  <Link
+                    href={`/course/${COURSE_ID_2}`}
+                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 3.0 Progress
+                  </Link>
+                )
+              )}
+
+              {isLogged && enrolledCourseIds.includes(COURSE_ID) && primaryCourseId !== COURSE_ID && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
@@ -252,14 +254,12 @@ export default function Nav({}: Props) {
                   </a>
                 ) : (
                   <Link
-                    href="/course-cp-2"
+                    href={`/course/${COURSE_ID}`}
                     className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     CP 2.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
               {isLogged && isEnrolled && (
@@ -534,27 +534,43 @@ export default function Nav({}: Props) {
                 সাকসেস স্টোরি
               </Link>
 
-              {isLogged && isEnrolled ? (
+              {isLogged && primaryCourseId && (
                 lmsPreference === "unlocked" ? (
                   <a
-                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    href={getCoursesDashboardUrl(primaryCourseId)}
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
-                    href="/course"
+                    href={`/course/${primaryCourseId}`}
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     ক্লাস সমূহ
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
-              {isLogged && isCP2Taken ? (
+              {isLogged && enrolledCourseIds.includes(COURSE_ID_2) && primaryCourseId !== COURSE_ID_2 && (
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(COURSE_ID_2)}
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 3.0 Progress
+                  </a>
+                ) : (
+                  <Link
+                    href={`/course/${COURSE_ID_2}`}
+                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  >
+                    CP 3.0 Progress
+                  </Link>
+                )
+              )}
+
+              {isLogged && enrolledCourseIds.includes(COURSE_ID) && primaryCourseId !== COURSE_ID && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
@@ -564,14 +580,12 @@ export default function Nav({}: Props) {
                   </a>
                 ) : (
                   <Link
-                    href="/course-cp-2"
+                    href={`/course/${COURSE_ID}`}
                     className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
                   >
                     CP 2.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
               {/* {isLogged && (
