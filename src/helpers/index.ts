@@ -63,7 +63,29 @@ export function appendTokenToUrl(url: string, token: string | null): string {
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+  
+  // 1. First check URL parameters (highest priority)
+  let token = extractTokenFromUrl();
+
+  // 2. Then check cookies
+  if (!token) {
+    token = getCookie("token");
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+  }
+
+  // 3. Finally check localStorage
+  if (!token) {
+    token = localStorage.getItem("token");
+  }
+
+  // Validate token before returning
+  if (token && checkTokenValidity(token)) {
+    return token;
+  }
+
+  return null;
 }
 
 /** Extract and validate token from URL (hash #token= first, then query ?token=). Saves to localStorage and shared cookie, strips from URL. */
@@ -299,3 +321,36 @@ export function formatDate(inputDate: any) {
 
   return formattedDate;
 }
+
+export const createLoginRedirectUrl = () => {
+  const currentDomain = window.location.href;
+  return `https://www.codervai.com/auth/login?redirect=${encodeURIComponent(currentDomain)}`;
+};
+
+export const createRegisterRedirectUrl = () => {
+  const currentDomain = window.location.href;
+  return `https://www.codervai.com/auth/register?redirect=${encodeURIComponent(currentDomain)}`;
+};
+
+/**
+ * Extract user ID from JWT token
+ * Returns null if no valid user ID is found
+ */
+export const getUserIdFromToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+
+  const token = getAuthToken();
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode<any>(token);
+    
+    // Try different possible user ID fields
+    const userId = decoded.user_id || decoded.id || decoded.userId || decoded.sub;
+    
+    return userId ? String(userId) : null;
+  } catch (error) {
+    console.error('getUserIdFromToken: Failed to decode JWT token:', error);
+    return null;
+  }
+};
