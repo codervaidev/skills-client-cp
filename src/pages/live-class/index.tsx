@@ -142,8 +142,18 @@ export default function LiveClass() {
       })
       .then((res) => {
         const data = res.data.data;
-        setLiveClasses(data);
-        if (data?.list?.length) setActiveClassId((prev: number | null) => prev ?? data.list[0].id);
+        const sortedList = [...(data?.list || [])].sort((a: LiveClassItem, b: LiveClassItem) => {
+          const timeDiff = (b.scheduled_at || 0) - (a.scheduled_at || 0);
+          if (timeDiff !== 0) return timeDiff;
+          return (b.id || 0) - (a.id || 0);
+        });
+
+        setLiveClasses({
+          ...(data || {}),
+          list: sortedList,
+        });
+
+        if (sortedList.length) setActiveClassId((prev: number | null) => prev ?? sortedList[0].id);
         setUser({ ...user, loading: false });
       })
       .catch(() => {
@@ -234,6 +244,10 @@ export default function LiveClass() {
 
   useEffect(() => {
     if (selectedCourseId) fetchClasses();
+  }, [selectedCourseId]);
+
+  useEffect(() => {
+    setActiveClassId(null);
   }, [selectedCourseId]);
 
   const sortedLiveClasses = useMemo(() => {
