@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { isLoggedIn, logout } from "@/helpers";
 import jwtDecode from "jwt-decode";
@@ -94,6 +95,25 @@ export default function Nav({}: Props) {
     : null;
 
   const secondaryCourseIds = enrolledCourseIds.filter(id => id !== primaryCourseId);
+
+  const router = useRouter();
+  const currentPath = typeof window !== 'undefined' ? router.asPath.split('?')[0] : '';
+
+  const isExternal = (href: string) => href.startsWith('http');
+
+  const isActive = (href: string) => {
+    if (!href) return false;
+    if (isExternal(href)) return false;
+    if (!currentPath) return false;
+    if (href === currentPath) return true;
+    return currentPath.startsWith(href);
+  };
+
+  const desktopBase = "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150";
+  const mobileBase = "hover:text-black dark:hover:text-white ease-in-out duration-150";
+  const activeClasses = "text-purple-600 font-semibold";
+
+  const linkClass = (href: string, base: string = desktopBase) => `${base} ${isActive(href) ? activeClasses : ''}`;
 
   const toggleDarkMode = () => {
     const nextDarkMode = !darkMode;
@@ -228,7 +248,7 @@ export default function Nav({}: Props) {
                 href="https://courses.codervai.com/course-details/15"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass("https://courses.codervai.com/course-details/15", "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
               >
                 কোর্স ডিটেইলস
               </a>
@@ -236,7 +256,7 @@ export default function Nav({}: Props) {
 
               <Link
                 href="/success-story"
-                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass("/success-story")}
               >
                 সাকসেস স্টোরি
               </Link>
@@ -245,14 +265,14 @@ export default function Nav({}: Props) {
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(primaryCourseId)}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(primaryCourseId), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
                   >
                     ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
                     href={`/course/${primaryCourseId}`}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${primaryCourseId}`)}
                   >
                     ক্লাস সমূহ
                   </Link>
@@ -263,14 +283,14 @@ export default function Nav({}: Props) {
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID_2), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
                   >
                     CP 3.0 Progress
                   </a>
                 ) : (
                   <Link
                     href={`/course/${COURSE_ID_2}`}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${COURSE_ID_2}`)}
                   >
                     CP 3.0 Progress
                   </Link>
@@ -281,14 +301,14 @@ export default function Nav({}: Props) {
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
                   >
                     CP 2.0 Progress
                   </a>
                 ) : (
                   <Link
                     href={`/course/${COURSE_ID}`}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${COURSE_ID}`)}
                   >
                     CP 2.0 Progress
                   </Link>
@@ -298,24 +318,24 @@ export default function Nav({}: Props) {
               {isLogged && isEnrolled && (
                 <Link
                   href="/live-class"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/live-class')}
                 >
                   লাইভ ক্লাস
                 </Link>
               )}
 
-              {/* {isLogged && (
+              {isLogged && isEnrolled && (
                 <Link
                   href="/ranking"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/ranking')}
                 >
                   র‍্যাঙ্কিং
                 </Link>
-              )} */}
+              )}
               {isLogged && isEnrolled && (
                 <Link
                   href="/contests/lists"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/contests/lists')}
                 >
                   প্রতিযোগিতাসমূহ
                 </Link>
@@ -540,23 +560,32 @@ export default function Nav({}: Props) {
 
               <Link
                 href="/success-story"
-                className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass('/success-story', mobileBase)}
               >
                 সাকসেস স্টোরি
               </Link>
+
+              <a
+                href="https://courses.codervai.com/course-details/15"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass("https://courses.codervai.com/course-details/15", mobileBase)}
+              >
+                কোর্স ডিটেইলস
+              </a>
 
               {isLogged && primaryCourseId && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(primaryCourseId)}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(primaryCourseId), mobileBase)}
                   >
                     ক্লাস সমূহ
                   </a>
                 ) : (
                   <Link
                     href={`/course/${primaryCourseId}`}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${primaryCourseId}`, mobileBase)}
                   >
                     ক্লাস সমূহ
                   </Link>
@@ -567,14 +596,14 @@ export default function Nav({}: Props) {
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID_2), mobileBase)}
                   >
                     CP 3.0 Progress
                   </a>
                 ) : (
                   <Link
                     href={`/course/${COURSE_ID_2}`}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${COURSE_ID_2}`, mobileBase)}
                   >
                     CP 3.0 Progress
                   </Link>
@@ -585,28 +614,46 @@ export default function Nav({}: Props) {
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID), mobileBase)}
                   >
                     CP 2.0 Progress
                   </a>
                 ) : (
                   <Link
                     href={`/course/${COURSE_ID}`}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(`/course/${COURSE_ID}`, mobileBase)}
                   >
                     CP 2.0 Progress
                   </Link>
                 )
               )}
 
-              {/* {isLogged && (
+              {isLogged && isEnrolled && (
+                <Link
+                  href="/live-class"
+                  className={linkClass('/live-class', mobileBase)}
+                >
+                  লাইভ ক্লাস
+                </Link>
+              )}
+
+              {isLogged && isEnrolled && (
                 <Link
                   href="/ranking"
-                  className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/ranking', mobileBase)}
                 >
                   র‍্যাঙ্কিং
                 </Link>
-              )} */}
+              )}
+
+              {isLogged && isEnrolled && (
+                <Link
+                  href="/contests/lists"
+                  className={linkClass('/contests/lists', mobileBase)}
+                >
+                  প্রতিযোগিতাসমূহ
+                </Link>
+              )}
             </div>
 
             {!isLogged ? (

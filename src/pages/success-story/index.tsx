@@ -25,7 +25,7 @@ const GridCard = ({
   animateDelay?: boolean;
 }) => (
   <div
-    className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:border-purple/50 hover:shadow-[0_0_15px_rgba(138,43,226,0.4)] dark:hover:border-purple/70 dark:hover:shadow-[0_0_20px_rgba(138,43,226,0.5)] ${
+    className={`bg-white/95 dark:bg-[#161223] rounded-2xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:-translate-y-1 hover:shadow-xl hover:border-purple/50 hover:shadow-[0_0_18px_rgba(138,43,226,0.35)] dark:hover:border-purple/70 dark:hover:shadow-[0_0_24px_rgba(138,43,226,0.45)] ${
       animateDelay ? "animate-card" : ""
     }`}
     style={animateDelay ? { animationDelay: `${index * 100}ms` } : undefined}
@@ -35,7 +35,7 @@ const GridCard = ({
         <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 px-3 py-1 rounded-full text-sm font-medium">
           Batch - {story.batch}
         </span>
-        <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
+        <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 px-3 py-1 rounded-full text-sm font-medium">
           {story.codeforces && `${story.codeforces.rating}`} ⭐
         </span>
       </div>
@@ -202,7 +202,7 @@ const ListCard = ({
   animateDelay?: boolean;
 }) => (
   <div
-    className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:border-purple/50 hover:shadow-[0_0_15px_rgba(138,43,226,0.4)] dark:hover:border-purple/70 dark:hover:shadow-[0_0_20px_rgba(138,43,226,0.5)] ${
+    className={`bg-white/95 dark:bg-[#161223] rounded-2xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:-translate-y-1 hover:shadow-xl hover:border-purple/50 hover:shadow-[0_0_18px_rgba(138,43,226,0.35)] dark:hover:border-purple/70 dark:hover:shadow-[0_0_24px_rgba(138,43,226,0.45)] ${
       animateDelay ? "animate-card" : ""
     }`}
     style={animateDelay ? { animationDelay: `${index * 100}ms` } : undefined}
@@ -457,6 +457,13 @@ const SuccessStory = () => {
 
   // Calculate total pages
   const totalPages = Math.ceil(filteredStories.length / storiesPerPage);
+  const totalRatings = filteredStories.reduce(
+    (sum, story) => sum + (story.codeforces?.rating || 0),
+    0,
+  );
+  const avgRating = filteredStories.length
+    ? Math.round(totalRatings / filteredStories.length)
+    : 0;
 
   return (
     <div className={`${HindSiliguri.variable} font-hind overflow-x-hidden`}>
@@ -578,15 +585,17 @@ const SuccessStory = () => {
         </button>
       )}
 
-      <div className="py-16 bg-white dark:bg-[#000] overflow-x-hidden">
+      <div className="py-16 bg-white dark:bg-[#07030f] overflow-x-hidden">
         <div className="w-[90%] lgXl:w-[80%] mx-auto py-12 z-20 min-h-[80vh]">
           {/* Hero Section */}
           <div
-            className={`mb-10 text-center ${mounted ? "animate-fade-in" : ""}`}
+            className={`mb-10 rounded-3xl border border-gray-200/70 dark:border-purple/20 bg-gradient-to-br from-[#f7f1ff] via-white to-[#f3fffb] dark:from-[#130a1f] dark:via-[#0f0a19] dark:to-[#0a1522] p-8 md:p-12 text-center relative overflow-hidden ${mounted ? "animate-fade-in" : ""}`}
             style={{ animationDelay: "0ms" }}
           >
+            <div className="absolute -top-16 -left-16 h-40 w-40 rounded-full bg-purple/20 blur-3xl" />
+            <div className="absolute -bottom-16 -right-10 h-44 w-44 rounded-full bg-cyan-400/20 blur-3xl" />
             <h1 className="text-4xl md:text-5xl font-bold text-heading dark:text-darkHeading mb-4">
-              Journey to Success
+              Success Story Wall
             </h1>
             <p className="text-paragraph dark:text-darkParagraph text-lg max-w-3xl mx-auto">
               ৫-৬ মাসব্যাপী আমাদের কম্পিটিটিভ প্রোগ্রামিং কোর্সটি সফলভাবে শেষ
@@ -596,11 +605,12 @@ const SuccessStory = () => {
               কোর্স শেষে বাস্তব জাজ প্ল্যাটফর্মে নিজেদের মেধা ও পরিশ্রমের
               মাধ্যমে প্রমাণ করেছে
             </p>
+            {/* Stats cards removed as requested */}
           </div>
 
           {/* Controls Section */}
           <div
-            className={`flex flex-col md:flex-row justify-between items-center mb-8 gap-4 ${mounted ? "animate-fade-in" : ""}`}
+            className={`flex flex-col md:flex-row justify-between items-center mb-8 gap-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-[#120d1d] p-4 md:p-5 ${mounted ? "animate-fade-in" : ""}`}
             style={{ animationDelay: "200ms" }}
           >
             {/* Filter Tabs */}
@@ -609,7 +619,7 @@ const SuccessStory = () => {
                 onClick={() => handleBatchChange("all")}
                 className={`px-4 py-2 text-sm font-medium rounded-l-lg btn-transition ${
                   selectedBatch === "all"
-                    ? "bg-purple text-white"
+                    ? "bg-purple text-white shadow-md"
                     : "bg-white dark:bg-gray-800 text-paragraph dark:text-darkParagraph border border-gray-200 dark:border-gray-600"
                 }`}
               >
@@ -623,7 +633,7 @@ const SuccessStory = () => {
                     index === uniqueBatches.length - 1 ? "rounded-r-lg" : ""
                   } ${
                     selectedBatch === batch.toString()
-                      ? "bg-purple text-white"
+                      ? "bg-purple text-white shadow-md"
                       : "bg-white dark:bg-gray-800 text-paragraph dark:text-darkParagraph border border-gray-200 dark:border-gray-600"
                   }`}
                 >
@@ -638,7 +648,7 @@ const SuccessStory = () => {
                 onClick={() => handleViewTypeChange("grid")}
                 className={`p-2 rounded-l-lg btn-transition ${
                   viewType === "grid"
-                    ? "bg-purple text-white"
+                    ? "bg-purple text-white shadow-md"
                     : "bg-white dark:bg-gray-800 text-paragraph dark:text-darkParagraph border border-gray-200 dark:border-gray-600"
                 }`}
                 aria-label="Grid view"
@@ -661,7 +671,7 @@ const SuccessStory = () => {
                 onClick={() => handleViewTypeChange("list")}
                 className={`p-2 rounded-r-lg btn-transition ${
                   viewType === "list"
-                    ? "bg-purple text-white"
+                    ? "bg-purple text-white shadow-md"
                     : "bg-white dark:bg-gray-800 text-paragraph dark:text-darkParagraph border border-gray-200 dark:border-gray-600"
                 }`}
                 aria-label="List view"

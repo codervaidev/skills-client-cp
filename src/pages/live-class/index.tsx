@@ -65,6 +65,21 @@ const getDurationInMinutes = (duration: any) => {
   return parseInt(duration, 10) || 60;
 };
 
+const urlRegex = /(https?:\/\/[^\s<]+)/g;
+
+const linkifyText = (text: string) =>
+  text.replace(
+    urlRegex,
+    (url) =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline break-all hover:opacity-80">${url}</a>`,
+  );
+
+const renderRichDescription = (content: string) =>
+  content
+    .split(/(<[^>]+>)/g)
+    .map((part) => (part.startsWith("<") ? part : linkifyText(part)))
+    .join("");
+
 export default function LiveClass() {
   const [user, setUser] = useContext<any>(UserContext);
   const [liveClasses, setLiveClasses] = useState<{ list: LiveClassItem[]; serverTimeStamp: number }>({
@@ -221,15 +236,23 @@ export default function LiveClass() {
     if (selectedCourseId) fetchClasses();
   }, [selectedCourseId]);
 
+  const sortedLiveClasses = useMemo(() => {
+    return [...(liveClasses.list || [])].sort((a, b) => {
+      const timeDiff = (b.scheduled_at || 0) - (a.scheduled_at || 0);
+      if (timeDiff !== 0) return timeDiff;
+      return (b.id || 0) - (a.id || 0);
+    });
+  }, [liveClasses.list]);
+
   const classesWithStatus = useMemo(() => {
     const currentTime = liveClasses.serverTimeStamp;
-    return (liveClasses.list || []).map((liveClass) => {
+    return sortedLiveClasses.map((liveClass) => {
       const durationInSeconds = getDurationInMinutes(liveClass.duration) * 60;
       const isLive = liveClass.scheduled_at <= currentTime && liveClass.scheduled_at + durationInSeconds > currentTime;
       const isPast = liveClass.scheduled_at + durationInSeconds <= currentTime;
       return { ...liveClass, isLive, isPast, isUpcoming: !isLive && !isPast };
     });
-  }, [liveClasses]);
+  }, [liveClasses.serverTimeStamp, sortedLiveClasses]);
 
   const activeClass = useMemo(() => {
     if (!classesWithStatus.length) return null;
@@ -305,7 +328,12 @@ export default function LiveClass() {
                 </div>
 
                 <h2 className="text-2xl md:text-3xl font-semibold text-heading dark:text-darkHeading">{activeClass?.title || "Untitled Session"}</h2>
-                <p className="mt-2 text-paragraph dark:text-darkParagraph">{activeClass?.description || "No description available"}</p>
+                <div
+                  className="mt-2 text-paragraph dark:text-darkParagraph leading-7 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_a]:text-purple-600 [&_a]:underline [&_a:hover]:opacity-80 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                  dangerouslySetInnerHTML={{
+                    __html: renderRichDescription(activeClass?.description || "No description available"),
+                  }}
+                />
                 <p className="mt-3 text-sm text-paragraph dark:text-darkParagraph">Instructor: {activeClass?.instructor_name || "Instructor"} • {getCourseName(selectedCourseId)}</p>
 
                 {activeClass?.isUpcoming && <CountdownTimer targetTimestamp={activeClass.scheduled_at} />}
