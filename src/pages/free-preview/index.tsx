@@ -21,22 +21,22 @@ import {
   RadioGroup,
   Theme,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { Toaster, toast } from "react-hot-toast";
 import { pink } from "@mui/material/colors";
-import { withStyles } from "@mui/styles";
 import { RxButton } from "react-icons/rx";
 import FloatingCompiler from "@/components/FloatingCompiler";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/router";
-const GreenRadio = withStyles({
-  root: {
+
+// `@mui/styles` is deprecated and conflicts with React 18 peer deps.
+// Use MUI v5 supported styling instead.
+const GreenRadio = styled(Radio)({
+  color: "#fff",
+  "&.Mui-checked": {
     color: "#fff",
-    "&$checked": {
-      color: "#fff",
-    },
   },
-  checked: {},
-})((props) => <Radio color="default" {...props} />);
+});
 
 export default function CourseDetailsPage() {
   const cancelButtonRef = useRef(null);

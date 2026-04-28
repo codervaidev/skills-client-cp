@@ -2,7 +2,6 @@ import { UserContext } from "@/Contexts/UserContext";
 import FloatingCompiler from "@/components/FloatingCompiler";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
-import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import Link from "next/link";
 import { useContext, useState, useEffect } from "react";
@@ -48,8 +47,6 @@ import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { useHasPurchasedLmsPreferenceCourses } from "@/hooks/useHasPurchasedLmsPreferenceCourses";
 import LmsPreferenceModal from "@/components/LmsPreferenceModal";
 import { isLoggedIn } from "@/helpers";
-
-const inter = Inter({ subsets: ["latin"] });
 
 const logo1: JSX.Element = <Logo1 />;
 const logo2: JSX.Element = <Logo2 />;

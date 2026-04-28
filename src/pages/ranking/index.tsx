@@ -20,6 +20,12 @@ import MyRankBanner from "@/components/Ranking/MyRankBanner";
 import RankingTable from "@/components/Ranking/RankingTable";
 import CourseSelector from "@/components/Ranking/CourseSelector";
 
+// This page is auth-gated and data-driven on the client. Explicitly opt into SSR
+// so Next doesn't try to prerender/export it at build time.
+export async function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function RankingPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);

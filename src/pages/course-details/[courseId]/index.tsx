@@ -159,6 +159,9 @@ export default function CourseDetailsPage() {
     chips: {
       deadline: "2023-10-13T18:00:00.000Z",
       total_seats: "",
+      // API returns additional chip groups like `enrollment`; keep an empty default
+      // so TS inference matches later usage (Object.entries(courseData.chips.enrollment)).
+      enrollment: {} as Record<string, { label?: string; value?: string }>,
     },
     short_description: "",
     study_plan_chips: {

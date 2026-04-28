@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { SuccessStory } from "@/data/successStories";
 
 interface AnimatedSuccessStoriesProps {
@@ -64,7 +64,7 @@ const AnimatedSuccessStories: React.FC<AnimatedSuccessStoriesProps> = ({ stories
   const story = stories[currentIndex];
 
   // Enhanced card enter/exit variants for more dynamic movement
-  const containerVariants = {
+  const containerVariants: Variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
       opacity: 0,
@@ -92,7 +92,7 @@ const AnimatedSuccessStories: React.FC<AnimatedSuccessStoriesProps> = ({ stories
   };
 
   // Children element variants for staggered animations
-  const itemVariants = {
+  const itemVariants: Variants = {
     enter: (direction: number) => ({
       y: direction > 0 ? 50 : -50,
       x: direction > 0 ? -30 : 30,

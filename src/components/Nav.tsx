@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import Link from "next/link";
-import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { isLoggedIn, logout } from "@/helpers";
 import jwtDecode from "jwt-decode";
@@ -18,6 +17,34 @@ import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
 const TestComponent = dynamic(() => import("./TestComponent"), {
   ssr: false,
 });
+
+function ThemeToggle({
+  darkMode,
+  onToggle,
+}: {
+  darkMode: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Toggle dark mode"
+      onClick={onToggle}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-heading transition-colors hover:bg-black/5 dark:text-darkHeading dark:hover:bg-white/10"
+    >
+      {darkMode ? (
+        <svg className="h-5 w-5 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" />
+          <path d="M12 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 17a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 4.22a1 1 0 0 1 1.41 0l.7.7a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 0 1 0-1.41Zm13.45 13.45a1 1 0 0 1 1.41 0l.7.7a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 0 1 0-1.41ZM2 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm17 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM4.22 19.78a1 1 0 0 1 0-1.41l.7-.7a1 1 0 1 1 1.41 1.41l-.7.7a1 1 0 0 1-1.41 0ZM17.67 6.33a1 1 0 0 1 0-1.41l.7-.7a1 1 0 1 1 1.41 1.41l-.7.7a1 1 0 0 1-1.41 0Z" />
+        </svg>
+      ) : (
+        <svg className="h-5 w-5 text-heading dark:text-darkHeading" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 14.2A8.6 8.6 0 0 1 9.8 3a.75.75 0 0 0-.92-.92A10.1 10.1 0 1 0 21.92 15.1a.75.75 0 0 0-.92-.9Z" />
+        </svg>
+      )}
+    </button>
+  );
+}
 
 function changeToDarkMode() {
   document.documentElement.classList.add("dark");
@@ -67,6 +94,12 @@ export default function Nav({}: Props) {
     : null;
 
   const secondaryCourseIds = enrolledCourseIds.filter(id => id !== primaryCourseId);
+
+  const toggleDarkMode = () => {
+    const nextDarkMode = !darkMode;
+    localStorage.setItem("darkMode", nextDarkMode.toString());
+    setDarkMode(nextDarkMode);
+  };
 
   const fetchEnrolledCourses = () => {
     const token = localStorage.getItem("token");
@@ -313,18 +346,7 @@ export default function Nav({}: Props) {
                     </svg>
                   </Link>
                 </div>
-                <DarkModeSwitch
-                  sunColor="orange"
-                  moonColor="black"
-                  size={20}
-                  checked={!darkMode}
-                  onChange={() => {
-                    localStorage.setItem("darkMode", (!darkMode).toString());
-                    setDarkMode(!darkMode);
-
-                    // toggleTheme();
-                  }}
-                />
+                <ThemeToggle darkMode={darkMode} onToggle={toggleDarkMode} />
                 {/* {false ? (
                   <Link href="/notifications" title="নোটিফিকেশানস">
                     {darkMode ? (
@@ -447,18 +469,7 @@ export default function Nav({}: Props) {
               </div>
             ) : (
               <div className="flex gap-8 md:gap-8 items-center">
-                <DarkModeSwitch
-                  sunColor="orange"
-                  moonColor="black"
-                  size={20}
-                  checked={!darkMode}
-                  onChange={() => {
-                    localStorage.setItem("darkMode", (!darkMode).toString());
-                    setDarkMode(!darkMode);
-
-                    // toggleTheme();
-                  }}
-                />
+                <ThemeToggle darkMode={darkMode} onToggle={toggleDarkMode} />
                 <a
                   href="https://www.codervai.com/auth/login?redirect=cp.codervai.com"
                   className=" hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150 text-sm md:text-base"
