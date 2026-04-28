@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import Link from "next/link";
-import { DarkModeSwitch } from "react-toggle-dark-mode";
+import { useRouter } from "next/router";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { isLoggedIn, logout } from "@/helpers";
 import jwtDecode from "jwt-decode";
@@ -10,7 +10,7 @@ type Props = {};
 
 import dynamic from "next/dynamic";
 import axios from "axios";
-import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2, COURSE_ID_3 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
@@ -18,6 +18,34 @@ import { getCoursesDashboardUrl } from "@/constants/lmsPreference";
 const TestComponent = dynamic(() => import("./TestComponent"), {
   ssr: false,
 });
+
+function ThemeToggle({
+  darkMode,
+  onToggle,
+}: {
+  darkMode: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Toggle dark mode"
+      onClick={onToggle}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-heading transition-colors hover:bg-black/5 dark:text-darkHeading dark:hover:bg-white/10"
+    >
+      {darkMode ? (
+        <svg className="h-5 w-5 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" />
+          <path d="M12 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 17a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 4.22a1 1 0 0 1 1.41 0l.7.7a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 0 1 0-1.41Zm13.45 13.45a1 1 0 0 1 1.41 0l.7.7a1 1 0 0 1-1.41 1.41l-.7-.7a1 1 0 0 1 0-1.41ZM2 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm17 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM4.22 19.78a1 1 0 0 1 0-1.41l.7-.7a1 1 0 1 1 1.41 1.41l-.7.7a1 1 0 0 1-1.41 0ZM17.67 6.33a1 1 0 0 1 0-1.41l.7-.7a1 1 0 1 1 1.41 1.41l-.7.7a1 1 0 0 1-1.41 0Z" />
+        </svg>
+      ) : (
+        <svg className="h-5 w-5 text-heading dark:text-darkHeading" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 14.2A8.6 8.6 0 0 1 9.8 3a.75.75 0 0 0-.92-.92A10.1 10.1 0 1 0 21.92 15.1a.75.75 0 0 0-.92-.9Z" />
+        </svg>
+      )}
+    </button>
+  );
+}
 
 function changeToDarkMode() {
   document.documentElement.classList.add("dark");
@@ -50,43 +78,61 @@ export default function Nav({}: Props) {
   const [score, setScore] = useState(0);
   const [user, setUser] = useContext<any>(UserContext);
   const [notificationsCount, setNotificationsCount] = useState<any>(0);
-  const [isCP2Taken, setIsCP2Taken] = useState(false);
-  const [isCP3Taken, setIsCP3Taken] = useState(false);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const { lmsPreference } = useLmsPreference();
 
   // User is enrolled in at least one course
-  const isEnrolled = isCP2Taken || isCP3Taken;
+  const isEnrolled = enrolledCourseIds.length > 0;
 
-  const fetchCP2 = () => {
-    const token = localStorage.getItem("token");
-    axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        if (res.data.isTaken) {
-          setIsCP2Taken(true);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  // Identify the latest course the user is enrolled in
+  // Order of priority: COURSE_ID_3 (18) > COURSE_ID_2 (15) > COURSE_ID (1)
+  const primaryCourseId = enrolledCourseIds.includes(COURSE_ID_3)
+    ? COURSE_ID_3
+    : enrolledCourseIds.includes(COURSE_ID_2)
+    ? COURSE_ID_2
+    : enrolledCourseIds.includes(COURSE_ID)
+    ? COURSE_ID
+    : null;
+
+  const secondaryCourseIds = enrolledCourseIds.filter(id => id !== primaryCourseId);
+
+  const router = useRouter();
+  const currentPath = typeof window !== 'undefined' ? router.asPath.split('?')[0] : '';
+
+  const isExternal = (href: string) => href.startsWith('http');
+
+  const isActive = (href: string) => {
+    if (!href) return false;
+    if (isExternal(href)) return false;
+    if (!currentPath) return false;
+    if (href === currentPath) return true;
+    return currentPath.startsWith(href);
   };
 
-  const fetchCP3 = () => {
+  const desktopBase = "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150";
+  const mobileBase = "hover:text-black dark:hover:text-white ease-in-out duration-150";
+  const activeClasses = "text-purple-600 font-semibold";
+
+  const linkClass = (href: string, base: string = desktopBase) => `${base} ${isActive(href) ? activeClasses : ''}`;
+
+  const toggleDarkMode = () => {
+    const nextDarkMode = !darkMode;
+    localStorage.setItem("darkMode", nextDarkMode.toString());
+    setDarkMode(nextDarkMode);
+  };
+
+  const fetchEnrolledCourses = () => {
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
+      .get(BACKEND_URL + "/user/course/getEnrolledCoursesByUserId", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => {
-        if (res.data.isTaken) {
-          setIsCP3Taken(true);
-        }
+        const enrolled = res.data?.data ?? [];
+        const ids = enrolled.map((c: any) => String(c.id));
+        setEnrolledCourseIds(ids);
       })
       .catch((err) => {
         console.log(err);
@@ -117,45 +163,29 @@ export default function Nav({}: Props) {
     setToken(localStorage.getItem("token"));
     if (isLoggedIn()) {
       setIsLoggedIn(true);
-      fetchScore();
-      fetchNotificationsCount();
-      fetchCP2();
-      fetchCP3();
+      fetchEnrolledCourses();
     } else {
       setIsLoggedIn(false);
     }
 
-    const isSystemDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
     const pastPreference = localStorage.getItem("darkMode");
 
     if (pastPreference) {
       if (pastPreference == "true") {
         setDarkMode(true);
-        console.log("past ref true");
       } else {
         setDarkMode(false);
-        console.log("past ref false");
       }
     } else {
       setDarkMode(true);
-      console.log("system dark");
     }
-    // else if (isSystemDark) {
-    //   setDarkMode(true);
-    //   console.log("system dark");
-    // }
   }, []);
 
-  useEffect(() => {
-    fetchScore();
-  }, [user.scoreTrigger]);
-
   const fetchScore = () => {
+    if (!primaryCourseId) return;
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getScore/" + (isCP2Taken ? COURSE_ID : COURSE_ID_2), {
+      .get(BACKEND_URL + "/user/course/getScore/" + primaryCourseId, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -166,9 +196,10 @@ export default function Nav({}: Props) {
       .catch((err) => {});
   };
   const fetchNotificationsCount = () => {
+    if (!primaryCourseId) return;
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/notification/count?courseId=" + (isCP2Taken ? COURSE_ID : COURSE_ID_2), {
+      .get(BACKEND_URL + "/user/notification/count?courseId=" + primaryCourseId, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -178,6 +209,14 @@ export default function Nav({}: Props) {
       })
       .catch((err) => {});
   };
+
+  // Re-fetch score & notifications whenever the primary course resolves or score changes
+  useEffect(() => {
+    if (primaryCourseId) {
+      fetchScore();
+      fetchNotificationsCount();
+    }
+  }, [primaryCourseId, user.scoreTrigger]);
 
   useEffect(() => {
     setUser({ ...user, darkMode: darkMode });
@@ -209,7 +248,7 @@ export default function Nav({}: Props) {
                 href="https://courses.codervai.com/course-details/15"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass("https://courses.codervai.com/course-details/15", "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
               >
                 কোর্স ডিটেইলস
               </a>
@@ -217,72 +256,86 @@ export default function Nav({}: Props) {
 
               <Link
                 href="/success-story"
-                className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass("/success-story")}
               >
                 সাকসেস স্টোরি
               </Link>
 
-              {isLogged && isEnrolled ? (
+              {isLogged && primaryCourseId && (
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(primaryCourseId)}
+                    className={linkClass(getCoursesDashboardUrl(primaryCourseId), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
+                  >
+                    ক্লাস সমূহ
+                  </a>
+                ) : (
+                  <Link
+                    href={`/course/${primaryCourseId}`}
+                    className={linkClass(`/course/${primaryCourseId}`)}
+                  >
+                    ক্লাস সমূহ
+                  </Link>
+                )
+              )}
+
+              {isLogged && enrolledCourseIds.includes(COURSE_ID_2) && primaryCourseId !== COURSE_ID_2 && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID_2), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
                   >
-                    ক্লাস সমূহ
+                    CP 3.0 Progress
                   </a>
                 ) : (
                   <Link
-                    href="/course"
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    href={`/course/${COURSE_ID_2}`}
+                    className={linkClass(`/course/${COURSE_ID_2}`)}
                   >
-                    ক্লাস সমূহ
+                    CP 3.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
-              {isLogged && isCP2Taken ? (
+              {isLogged && enrolledCourseIds.includes(COURSE_ID) && primaryCourseId !== COURSE_ID && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID), "hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150")}
                   >
                     CP 2.0 Progress
                   </a>
                 ) : (
                   <Link
-                    href="/course-cp-2"
-                    className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    href={`/course/${COURSE_ID}`}
+                    className={linkClass(`/course/${COURSE_ID}`)}
                   >
                     CP 2.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
               {isLogged && isEnrolled && (
                 <Link
                   href="/live-class"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/live-class')}
                 >
                   লাইভ ক্লাস
                 </Link>
               )}
 
-              {/* {isLogged && (
+              {isLogged && isEnrolled && (
                 <Link
                   href="/ranking"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/ranking')}
                 >
                   র‍্যাঙ্কিং
                 </Link>
-              )} */}
+              )}
               {isLogged && isEnrolled && (
                 <Link
                   href="/contests/lists"
-                  className="hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/contests/lists')}
                 >
                   প্রতিযোগিতাসমূহ
                 </Link>
@@ -313,18 +366,7 @@ export default function Nav({}: Props) {
                     </svg>
                   </Link>
                 </div>
-                <DarkModeSwitch
-                  sunColor="orange"
-                  moonColor="black"
-                  size={20}
-                  checked={!darkMode}
-                  onChange={() => {
-                    localStorage.setItem("darkMode", (!darkMode).toString());
-                    setDarkMode(!darkMode);
-
-                    // toggleTheme();
-                  }}
-                />
+                <ThemeToggle darkMode={darkMode} onToggle={toggleDarkMode} />
                 {/* {false ? (
                   <Link href="/notifications" title="নোটিফিকেশানস">
                     {darkMode ? (
@@ -447,18 +489,7 @@ export default function Nav({}: Props) {
               </div>
             ) : (
               <div className="flex gap-8 md:gap-8 items-center">
-                <DarkModeSwitch
-                  sunColor="orange"
-                  moonColor="black"
-                  size={20}
-                  checked={!darkMode}
-                  onChange={() => {
-                    localStorage.setItem("darkMode", (!darkMode).toString());
-                    setDarkMode(!darkMode);
-
-                    // toggleTheme();
-                  }}
-                />
+                <ThemeToggle darkMode={darkMode} onToggle={toggleDarkMode} />
                 <a
                   href="https://www.codervai.com/auth/login?redirect=cp.codervai.com"
                   className=" hidden lg:block hover:text-black dark:hover:text-white ease-in-out duration-150 text-sm md:text-base"
@@ -529,59 +560,100 @@ export default function Nav({}: Props) {
 
               <Link
                 href="/success-story"
-                className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                className={linkClass('/success-story', mobileBase)}
               >
                 সাকসেস স্টোরি
               </Link>
 
-              {isLogged && isEnrolled ? (
+              <a
+                href="https://courses.codervai.com/course-details/15"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass("https://courses.codervai.com/course-details/15", mobileBase)}
+              >
+                কোর্স ডিটেইলস
+              </a>
+
+              {isLogged && primaryCourseId && (
+                lmsPreference === "unlocked" ? (
+                  <a
+                    href={getCoursesDashboardUrl(primaryCourseId)}
+                    className={linkClass(getCoursesDashboardUrl(primaryCourseId), mobileBase)}
+                  >
+                    ক্লাস সমূহ
+                  </a>
+                ) : (
+                  <Link
+                    href={`/course/${primaryCourseId}`}
+                    className={linkClass(`/course/${primaryCourseId}`, mobileBase)}
+                  >
+                    ক্লাস সমূহ
+                  </Link>
+                )
+              )}
+
+              {isLogged && enrolledCourseIds.includes(COURSE_ID_2) && primaryCourseId !== COURSE_ID_2 && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID_2)}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID_2), mobileBase)}
                   >
-                    ক্লাস সমূহ
+                    CP 3.0 Progress
                   </a>
                 ) : (
                   <Link
-                    href="/course"
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    href={`/course/${COURSE_ID_2}`}
+                    className={linkClass(`/course/${COURSE_ID_2}`, mobileBase)}
                   >
-                    ক্লাস সমূহ
+                    CP 3.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
-              {isLogged && isCP2Taken ? (
+              {isLogged && enrolledCourseIds.includes(COURSE_ID) && primaryCourseId !== COURSE_ID && (
                 lmsPreference === "unlocked" ? (
                   <a
                     href={getCoursesDashboardUrl(COURSE_ID)}
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    className={linkClass(getCoursesDashboardUrl(COURSE_ID), mobileBase)}
                   >
                     CP 2.0 Progress
                   </a>
                 ) : (
                   <Link
-                    href="/course-cp-2"
-                    className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                    href={`/course/${COURSE_ID}`}
+                    className={linkClass(`/course/${COURSE_ID}`, mobileBase)}
                   >
                     CP 2.0 Progress
                   </Link>
                 )
-              ) : (
-                ""
               )}
 
-              {/* {isLogged && (
+              {isLogged && isEnrolled && (
+                <Link
+                  href="/live-class"
+                  className={linkClass('/live-class', mobileBase)}
+                >
+                  লাইভ ক্লাস
+                </Link>
+              )}
+
+              {isLogged && isEnrolled && (
                 <Link
                   href="/ranking"
-                  className=" hover:text-black dark:hover:text-white ease-in-out duration-150"
+                  className={linkClass('/ranking', mobileBase)}
                 >
                   র‍্যাঙ্কিং
                 </Link>
-              )} */}
+              )}
+
+              {isLogged && isEnrolled && (
+                <Link
+                  href="/contests/lists"
+                  className={linkClass('/contests/lists', mobileBase)}
+                >
+                  প্রতিযোগিতাসমূহ
+                </Link>
+              )}
             </div>
 
             {!isLogged ? (

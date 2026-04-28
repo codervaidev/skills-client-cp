@@ -37,6 +37,32 @@ import { CircularProgress } from "@mui/material";
 import Image from "next/image";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
 
+// Format an ISO date/time string into a readable label.
+function formatEnrollmentDate(isoString: string | undefined): string {
+  if (!isoString) return "";
+  try {
+    if (isoString.startsWith("T")) {
+      const dummy = `1970-01-01${isoString}`;
+      const d = new Date(dummy);
+      if (isNaN(d.getTime())) return isoString;
+      return d.toLocaleTimeString("bn-BD", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return date.toLocaleDateString("bn-BD", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return isoString;
+  }
+}
+
 const settings = {
   dots: true,
 
@@ -133,6 +159,9 @@ export default function CourseDetailsPage() {
     chips: {
       deadline: "2023-10-13T18:00:00.000Z",
       total_seats: "",
+      // API returns additional chip groups like `enrollment`; keep an empty default
+      // so TS inference matches later usage (Object.entries(courseData.chips.enrollment)).
+      enrollment: {} as Record<string, { label?: string; value?: string }>,
     },
     short_description: "",
     study_plan_chips: {
@@ -2314,46 +2343,27 @@ export default function CourseDetailsPage() {
                         </p>
                       </div>
                     </div> */}
-                    <div className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 ">
-                      <div>
-                        <p className="text-paragraph dark:text-darkParagraph text-xl">
-                          এনরোলমেন্ট শুরু
-                        </p>
-                        <p className="text-heading dark:text-darkHeading font-bold text-2xl mt-1">
-                          23 মার্চ
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 ">
-                      <div>
-                        <p className="text-paragraph dark:text-darkParagraph text-xl">
-                          এনরোলমেন্ট শেষ
-                        </p>
-                        <p className="text-heading dark:text-darkHeading font-bold text-2xl mt-1">
-                          10 এপ্রিল
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 ">
-                      <div>
-                        <p className="text-paragraph dark:text-darkParagraph text-xl">
-                          ওরিয়েন্টেশন ক্লাস
-                        </p>
-                        <p className="text-heading dark:text-darkHeading font-bold text-2xl mt-1">
-                          10 এপ্রিল
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 ">
-                      <div>
-                        <p className="text-paragraph dark:text-darkParagraph text-xl">
-                          সময়
-                        </p>
-                        <p className="text-heading dark:text-darkHeading font-bold text-2xl mt-1">
-                          রাত ৯:৩০
-                        </p>
-                      </div>
-                    </div>
+                    {courseData?.chips?.enrollment &&
+                      Object.entries(courseData.chips.enrollment).map(
+                        ([key, item]: [string, any]) => {
+                          if (!item?.value) return null;
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 "
+                            >
+                              <div>
+                                <p className="text-paragraph dark:text-darkParagraph text-xl">
+                                  {item.label || key}
+                                </p>
+                                <p className="text-heading dark:text-darkHeading font-bold text-2xl mt-1">
+                                  {formatEnrollmentDate(item.value)}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        },
+                      )}
                   </div>
                   <p className="text-lg mt-6 font-bold">
                     এই কোর্সে তুমি পাচ্ছো

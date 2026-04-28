@@ -1,4 +1,4 @@
-import { BACKEND_URL, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL, COURSE_ID, COURSE_ID_2, COURSE_ID_3 } from "@/api.config";
 import { UserContext } from "@/Contexts/UserContext";
 import { decryptString } from "@/helpers";
 import axios from "axios";
@@ -35,11 +35,73 @@ export default function CourseRedirect(): JSX.Element {
   let activeModule: any = null;
   let courseData: any = {};
 
-  useEffect(() => {
-    if (!lmsLoading && lmsPreference === "unlocked") {
-      window.location.href = getCoursesDashboardUrl(COURSE_ID_2);
+  const redirectHome = () => {
+    router.replace("/");
+  };
+
+  const fetchEnrolledCourseAndRoute = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      redirectHome();
       return;
     }
+
+    try {
+      const res = await axios.get(
+        BACKEND_URL + "/user/course/getEnrolledCoursesByUserId",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const enrolledCourses = res.data?.data ?? [];
+      const hasCP2 = enrolledCourses.some(
+        (course: any) => String(course.id) === COURSE_ID,
+      );
+      const hasCP3 = enrolledCourses.some(
+        (course: any) => String(course.id) === COURSE_ID_2,
+      );
+      const hasCP4 = enrolledCourses.some(
+        (course: any) => String(course.id) === COURSE_ID_3,
+      );
+
+      if (hasCP4) {
+        router.replace(`/course/${COURSE_ID_3}`);
+        return;
+      }
+
+      if (hasCP3) {
+        if (lmsPreference === "unlocked") {
+          window.location.href = getCoursesDashboardUrl(COURSE_ID_2);
+          return;
+        }
+
+        fetchCourse();
+        return;
+      }
+
+      if (hasCP2) {
+        if (lmsPreference === "unlocked") {
+          window.location.href = getCoursesDashboardUrl(COURSE_ID);
+          return;
+        }
+
+        router.replace("/course-cp-2");
+        return;
+      }
+
+      redirectHome();
+    } catch (err) {
+      redirectHome();
+    }
+  };
+
+  useEffect(() => {
+    if (lmsLoading) return;
+
+    fetchEnrolledCourseAndRoute();
   }, [lmsPreference, lmsLoading]);
 
   const fetchCourse = () => {
@@ -121,11 +183,6 @@ export default function CourseRedirect(): JSX.Element {
       console.log("Module is not live or not found. Skipping progress submission.");
     }
   };
-
-  useEffect(() => {
-    if (lmsLoading || lmsPreference === "unlocked") return;
-    fetchCourse();
-  }, [lmsLoading, lmsPreference]);
 
   return <></>;
 }

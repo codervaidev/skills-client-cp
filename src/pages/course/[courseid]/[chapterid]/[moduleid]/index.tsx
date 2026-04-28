@@ -7,7 +7,7 @@ import { BsChevronRight } from "react-icons/bs";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserContext } from "@/Contexts/UserContext";
 import axios from "axios";
-import { BACKEND_URL, COURSE_ID_2 } from "@/api.config";
+import { BACKEND_URL } from "@/api.config";
 import {
   calculateRemainingDays,
   countAssignmentsAndVideos,
@@ -21,9 +21,9 @@ import {
   RadioGroup,
   Theme,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { Toaster, toast } from "react-hot-toast";
 import { pink } from "@mui/material/colors";
-import { withStyles } from "@mui/styles";
 import { RxButton } from "react-icons/rx";
 import FloatingCompiler from "@/components/FloatingCompiler";
 import Footer from "@/components/Footer";
@@ -33,6 +33,7 @@ import { SyncLoader } from "react-spinners";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import DiscussionItem from "@/components/DiscussionItem.";
+import LMSSkeleton from "@/components/LMSSkeleton";
 
 import {
   ModuleVideoIcon,
@@ -48,15 +49,14 @@ import {
   PhaseHeader
 } from '@/components/CourseIcons';
 
-const GreenRadio = withStyles({
-  root: {
+// `@mui/styles` is deprecated and conflicts with React 18 peer deps.
+// Use MUI v5 supported styling instead.
+const GreenRadio = styled(Radio)({
+  color: "#fff",
+  "&.Mui-checked": {
     color: "#fff",
-    "&$checked": {
-      color: "#fff",
-    },
   },
-  checked: {},
-})((props) => <Radio color="default" {...props} />);
+});
 
 // const subdiscussions = [
 //   {
@@ -321,6 +321,7 @@ export default function CourseDetailsPage() {
 
   const [cfHandle, setCfHandle] = useState<any>("");
   const router = useRouter();
+  const courseId = router.query.courseid as string;
   const [courseData, setCourseData] = useState<any>({});
   const [discussions, setDiscussions] = useState<any>([]);
   const [openDiscussions, setOpenDiscussions] = useState<any>(false);
@@ -427,7 +428,7 @@ export default function CourseDetailsPage() {
     setUser({ ...user, loading: true });
     const token = localStorage.getItem("token");
     axios
-      .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
+      .get(BACKEND_URL + "/user/course/getfull/" + courseId, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -466,7 +467,7 @@ export default function CourseDetailsPage() {
           setActiveModule(targetModule);
         } else if (lastValidModule !== null) {
           router.replace(
-            `/course/${lastValidModule.chapter_id}/${lastValidModule.id}`,
+            `/course/${courseId}/${lastValidModule.chapter_id}/${lastValidModule.id}`,
           );
         } else {
           const chapters: Array<any> = res.data.chapters;
@@ -474,7 +475,7 @@ export default function CourseDetailsPage() {
           const modules: Array<any> = chapter.modules;
           const validModule = modules[modules.length - 1];
 
-          router.replace(`/course/${validModule.chapter_id}/${validModule.id}`);
+          router.replace(`/course/${courseId}/${validModule.chapter_id}/${validModule.id}`);
         }
 
         setUser({ ...user, loading: false });
@@ -523,7 +524,7 @@ export default function CourseDetailsPage() {
         )
         .then((res) => {
           axios
-            .get(BACKEND_URL + "/user/course/getfull/" + COURSE_ID_2, {
+            .get(BACKEND_URL + "/user/course/getfull/" + courseId, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -690,11 +691,10 @@ export default function CourseDetailsPage() {
   };
 
   useEffect(() => {
-    if (router.query.chapterid && router.query.moduleid) {
-
+    if (router.isReady && courseId && router.query.chapterid && router.query.moduleid) {
       fetchCourse();
     }
-  }, [router]);
+  }, [router.isReady, courseId, router.query.chapterid, router.query.moduleid]);
 
   useEffect(() => {
     if (activeModule?.data?.category === "CODE" && activeModule?.data?.is_cf) {
@@ -706,6 +706,11 @@ export default function CourseDetailsPage() {
       inline: "start",
     });
   }, [activeModule]);
+
+  const isLMSLoading = !courseData?.chapters?.length && !!courseId && !!router.query.chapterid && !!router.query.moduleid;
+  if (isLMSLoading) {
+    return <LMSSkeleton />;
+  }
 
   return (
     <div className={`  ${HindSiliguri.variable} font-hind   overflow-x-hidden`}>
@@ -1839,7 +1844,7 @@ export default function CourseDetailsPage() {
                                         ) {
                                           fetchEvalutedAssignment(module.id);
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
                                         if (
@@ -1849,7 +1854,7 @@ export default function CourseDetailsPage() {
                                           module.serial
                                         ) {
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
 
@@ -1860,7 +1865,7 @@ export default function CourseDetailsPage() {
                                         ) {
                                           submitProgress(module.id, module.score);
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
                                         if (
@@ -1870,7 +1875,7 @@ export default function CourseDetailsPage() {
                                           courseData.isTaken
                                         ) {
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
                                         if (
@@ -1880,7 +1885,7 @@ export default function CourseDetailsPage() {
                                         ) {
                                           submitProgress(module.id, module.score);
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
                                         if (
@@ -1890,7 +1895,7 @@ export default function CourseDetailsPage() {
                                         ) {
                                           submitProgress(module.id, module.score);
                                           router.push(
-                                            `/course/${module.chapter_id}/${module.id}`,
+                                            `/course/${courseId}/${module.chapter_id}/${module.id}`,
                                           );
                                         }
                                       }
