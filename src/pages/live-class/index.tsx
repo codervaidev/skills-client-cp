@@ -8,7 +8,7 @@ import { BACKEND_URL, COURSE_ID, COURSE_ID_2 } from "@/api.config";
 import FloatingCompiler from "@/components/FloatingCompiler";
 import Footer from "@/components/Footer";
 import jwtDecode from "jwt-decode";
-import VideoPlayer from "@/components/VideoPlayer";
+import VideoPlayer, { getTrustedVideoUrl } from "@/components/VideoPlayer";
 
 type LiveClassItem = {
   id: number;
@@ -273,6 +273,11 @@ export default function LiveClass() {
     return classesWithStatus.find((item: any) => item.id === activeClassId) || classesWithStatus[0];
   }, [classesWithStatus, activeClassId]);
 
+  const hasTrustedRecording = useMemo(() => {
+    const url = activeClass?.data?.recordedMeetingLink || "";
+    return Boolean(getTrustedVideoUrl(url));
+  }, [activeClass?.data?.recordedMeetingLink]);
+
   const getCourseName = (courseId: string) => {
     if (!courseId) return "No Course Selected";
     const course = enrolledCourses.find((item) => item.id.toString() === courseId);
@@ -328,7 +333,7 @@ export default function LiveClass() {
           {classesWithStatus.length > 0 ? (
             <div className="grid items-start gap-6 lg:grid-cols-12">
               <div className="lg:col-span-8 rounded-2xl border border-gray-300/30 dark:border-gray-500/20 bg-gray-50/60 dark:bg-white/[0.03] p-5 md:p-6">
-                {activeClass?.isPast && activeClass?.data?.recordedMeetingLink && (
+                {activeClass?.isPast && hasTrustedRecording && activeClass?.data?.recordedMeetingLink && (
                   <div className="mb-5 rounded-xl overflow-hidden border border-gray-300/30 dark:border-gray-500/20">
                     <VideoPlayer videoUrl={activeClass.data.recordedMeetingLink} />
                   </div>
@@ -370,10 +375,10 @@ export default function LiveClass() {
                     </button>
                   ) : (
                     <button
-                      disabled={!activeClass?.data?.recordedMeetingLink}
-                      className={`w-full md:w-auto rounded-xl px-6 py-3 font-semibold ${activeClass?.data?.recordedMeetingLink ? "bg-gray-900 text-white dark:bg-white dark:text-black" : "bg-gray-500 text-white cursor-not-allowed"}`}
+                      disabled={!hasTrustedRecording}
+                      className={`w-full md:w-auto rounded-xl px-6 py-3 font-semibold ${hasTrustedRecording ? "bg-gray-900 text-white dark:bg-white dark:text-black" : "bg-gray-500 text-white cursor-not-allowed"}`}
                     >
-                      {activeClass?.data?.recordedMeetingLink ? "Recording Ready Above" : "Recording Unavailable"}
+                      {hasTrustedRecording ? "Recording Ready Above" : "Recording Unavailable"}
                     </button>
                   )}
                 </div>

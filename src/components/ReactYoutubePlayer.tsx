@@ -37,6 +37,13 @@ const ReactYoutubePlayer = ({ videoUrl }: { videoUrl: string }) => {
           <ReactPlayer
             url={videoUrl + "&rel=0"}
             playing={playing}
+            config={{
+              playerVars: {
+                rel: 0,
+                modestbranding: 1,
+                iv_load_policy: 3,
+              },
+            }}
             onProgress={(e) => {
               setSeek(e);
             }}

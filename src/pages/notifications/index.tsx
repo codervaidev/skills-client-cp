@@ -368,42 +368,51 @@ export default function NotificationPage({}: Props) {
                 </div>
               </div> */}
               <div className="mt-10">
-                <div className="flex justify-end">
-                  <button
-                    className="text-white hover:opacity-70 hover:underline"
-                    onClick={markAllAsRead}
-                  >
-                    Mark All Read
-                  </button>
-                </div>
-                <InfiniteScroll
-                  dataLength={notifications.length}
-                  next={() => {
-                    if (firstCalled) {
-                      setCurrentPage((prev: any) => prev + 1);
+                {notifications.length > 0 && (
+                  <div className="flex justify-end">
+                    <button
+                      className="text-white hover:opacity-70 hover:underline"
+                      onClick={markAllAsRead}
+                    >
+                      Mark All Read
+                    </button>
+                  </div>
+                )}
+                {firstCalled && notifications.length === 0 ? (
+                  <div className="text-center mt-8">
+                    <p className="text-heading dark:text-darkHeading text-xl">
+                      You have no notifications
+                    </p>
+                  </div>
+                ) : (
+                  <InfiniteScroll
+                    dataLength={notifications.length}
+                    next={() => {
+                      if (firstCalled) {
+                        setCurrentPage((prev: any) => prev + 1);
+                      }
+                    }}
+                    hasMore={hasMoreNotifications}
+                    loader={
+                      <div className="text-center mt-8">
+                        <SyncLoader
+                          color={"#B153E0"}
+                          loading={true}
+                          size={6}
+                          aria-label="Loading Spinner"
+                          data-testid="loader"
+                        />
+                      </div>
                     }
-                  }}
-                  hasMore={hasMoreNotifications}
-                  loader={
-                    <div className="text-center mt-8">
-                      <SyncLoader
-                        color={"#B153E0"}
-                        loading={true}
-                        size={6}
-                        aria-label="Loading Spinner"
-                        data-testid="loader"
+                  >
+                    {notifications.map((notification: any, index: any) => (
+                      <NotificationItem
+                        key={index}
+                        populateFn={populateNotificationDialog} // fn to update parent component
+                        notification={notification}
                       />
-                    </div>
-                  }
-                >
-                  {notifications.map((notification: any, index: any) => (
-                    <NotificationItem
-                      key={index}
-                      populateFn={populateNotificationDialog} // fn to update parent component
-                      notification={notification}
-                    />
-                  ))}
-                  {/* {positions?.map((position: any, index: number) => (
+                    ))}
+                    {/* {positions?.map((position: any, index: number) => (
                     <div
                       key={Math.random()}
                       className={`flex justify-between text-heading mb-3 dark:text-darkHeading  py-4 rounded-lg bg-gray-400/20 backdrop-blur-lg  ${
@@ -432,7 +441,8 @@ export default function NotificationPage({}: Props) {
                       </div>
                     </div>
                   ))} */}
-                </InfiniteScroll>
+                  </InfiniteScroll>
+                )}
               </div>
             </div>
           </div>
