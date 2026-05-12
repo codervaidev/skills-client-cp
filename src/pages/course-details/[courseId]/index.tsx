@@ -36,6 +36,10 @@ const CelebrationLottie = dynamic(() => import("@/components/CelebrationLottie")
 import { CircularProgress } from "@mui/material";
 import Image from "next/image";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
+import {
+  ENROLLMENT_ICON_COMPONENTS,
+  isEnrollmentIconId,
+} from "@/constants/enrollment-icons";
 
 // Format an ISO date/time string into a readable label.
 function formatEnrollmentDate(isoString: string | undefined): string {
@@ -161,7 +165,10 @@ export default function CourseDetailsPage() {
       total_seats: "",
       // API returns additional chip groups like `enrollment`; keep an empty default
       // so TS inference matches later usage (Object.entries(courseData.chips.enrollment)).
-      enrollment: {} as Record<string, { label?: string; value?: string }>,
+      enrollment: {} as Record<
+        string,
+        { label?: string; value?: string; icon?: string }
+      >,
     },
     short_description: "",
     study_plan_chips: {
@@ -2347,11 +2354,29 @@ export default function CourseDetailsPage() {
                       Object.entries(courseData.chips.enrollment).map(
                         ([key, item]: [string, any]) => {
                           if (!item?.value) return null;
+
+                          const rawIcon =
+                            typeof item?.icon === "string"
+                              ? item.icon.trim()
+                              : "";
+                          const hasPresetIcon = rawIcon.length > 0;
+                          const iconId = hasPresetIcon
+                            ? isEnrollmentIconId(rawIcon)
+                              ? rawIcon
+                              : "calendar-days"
+                            : null;
+                          const IconComponent = iconId
+                            ? ENROLLMENT_ICON_COMPONENTS[iconId]
+                            : null;
+
                           return (
                             <div
                               key={key}
                               className="flex items-center gap-8 p-4 rounded-xl bg-black/20 dark:bg-white/5 "
                             >
+                              {IconComponent ? (
+                                <IconComponent className="w-7 h-7 text-[#FDAF22] flex-shrink-0" />
+                              ) : null}
                               <div>
                                 <p className="text-paragraph dark:text-darkParagraph text-xl">
                                   {item.label || key}

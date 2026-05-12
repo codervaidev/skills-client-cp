@@ -115,7 +115,7 @@ const GlobalStickyCTA: React.FC<GlobalStickyCTAProps> = ({ courseData }) => {
             href={`https://courses.codervai.com/course-details/${currentCourseId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-full py-3.5 lg:py-4 bg-[#B153E0] hover:bg-[#A144FF] text-white rounded-xl lg:rounded-2xl font-black text-xs lg:text-sm shadow-lg shadow-purple/20 transition-all active:scale-[0.98]"
+            className="hero-cta-primary flex items-center justify-center w-full py-3.5 lg:py-4 bg-[#B153E0] hover:bg-[#A144FF] text-white rounded-xl lg:rounded-2xl font-black text-xs lg:text-sm shadow-lg shadow-purple/20 transition-all active:scale-[0.98]"
           >
             এখনই এনরোল করো
           </a>

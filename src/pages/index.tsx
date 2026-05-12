@@ -22,10 +22,6 @@ import "slick-carousel/slick/slick-theme.css";
 import Image from "next/image";
 
 import {
-  Logo1,
-  Logo2,
-  Logo3,
-  Logo4,
   CompilerButton,
   GradientEllipse1,
   GradientEllipse2,
@@ -47,11 +43,10 @@ import { useLmsPreference } from "@/hooks/useLmsPreference";
 import { useHasPurchasedLmsPreferenceCourses } from "@/hooks/useHasPurchasedLmsPreferenceCourses";
 import LmsPreferenceModal from "@/components/LmsPreferenceModal";
 import { isLoggedIn } from "@/helpers";
-
-const logo1: JSX.Element = <Logo1 />;
-const logo2: JSX.Element = <Logo2 />;
-const logo3: JSX.Element = <Logo3 />;
-const logo4: JSX.Element = <Logo4 />;
+import {
+  ENROLLMENT_ICON_COMPONENTS,
+  isEnrollmentIconId,
+} from "@/constants/enrollment-icons";
 
 const HindSiliguri = localFont({
   src: [
@@ -363,60 +358,91 @@ export default function Home() {
             </defs>
           </svg>
 
-          {courseData?.chips && (
-            <AnimationOnScroll animateIn="animate__fadeIn" animateOnce>
-              {/* Add the new batch information section */}
-              <div className="w-[90%] lg:w-[80%] mx-auto mt-24 text-heading dark:text-darkHeading py-20 z-10">
-                <div className="flex gap-8 md:gap-20 justify-center flex-col items-center lg:flex-row text-center">
-                  <div className="relative">
-                    <h2 className="text-2xl lg:text-4xl">
-                      {" "}
-                      <span className="text-[#B153E0]">ব্যাচ</span> ইনফরমেশন{" "}
-                    </h2>
-                    <p className="text-paragraph dark:text-darkParagraph mt-2">
-                      আমাদের ব্যাচের টাইমলাইন
-                    </p>
-                  </div>
+          <AnimationOnScroll animateIn="animate__fadeIn" animateOnce>
+            {/* Add the new batch information section */}
+            <div className="w-[90%] lg:w-[80%] mx-auto mt-24 text-heading dark:text-darkHeading py-20 z-10">
+              <div className="flex gap-8 md:gap-20 justify-center flex-col items-center lg:flex-row text-center">
+                <div className="relative">
+                  <h2 className="text-2xl lg:text-4xl">
+                    {" "}
+                    <span className="text-[#B153E0]">ব্যাচ</span> ইনফরমেশন{" "}
+                  </h2>
+                  <p className="text-paragraph dark:text-darkParagraph mt-2">
+                    আমাদের ব্যাচের টাইমলাইন
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-10 lg:w-[60%] mx-auto">
-                  {(() => {
-                    const icons = [logo1, logo2, logo3, logo4];
-                    return Object.entries(courseData.chips.enrollment).map(
-                      ([key, item]: [string, any], index) => {
+              </div>
+
+              {!courseData?.chips ? (
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-10 lg:w-[60%] mx-auto animate-pulse">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg p-4 bg-white/[.06] flex items-center gap-4 min-h-[84px]"
+                    >
+                      <div className="w-7 h-7 rounded bg-white/20" />
+                      <div className="flex-1">
+                        <div className="h-3 w-24 rounded bg-white/20 mb-3" />
+                        <div className="h-4 w-36 rounded bg-white/20" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-10 lg:w-[60%] mx-auto">
+                    {Object.entries(courseData.chips.enrollment).map(
+                      ([key, item]: [string, any]) => {
                         if (!item?.value) return null;
+
+                        const rawIcon = typeof item?.icon === "string" ? item.icon.trim() : "";
+                        const hasPresetIcon = rawIcon.length > 0;
+                        const iconId = hasPresetIcon
+                          ? isEnrollmentIconId(rawIcon)
+                            ? rawIcon
+                            : "calendar-days"
+                          : null;
+                        const IconComponent = iconId
+                          ? ENROLLMENT_ICON_COMPONENTS[iconId]
+                          : null;
+
                         return (
                           <TimelineItem
                             key={key}
-                            icon={icons[index % icons.length]}
+                            icon={
+                              IconComponent ? (
+                                <IconComponent className="w-7 h-7 text-[#FDAF22]" />
+                              ) : undefined
+                            }
                             date={formatEnrollmentDate(item.value)}
                             label={item.label || key}
                             isHighlighted={key.includes("enrollment")}
                           />
                         );
-                      }
-                    );
-                  })()}
-                </div>
-                <p className="mt-8  text-gray-400 text-center">
-                  তুমি যদি আগ্রহী হয়ে থাকো, আমাদের{" "}
-                  <span className="text-[#B153E0] font-semibold">
-                    {courseData?.chips?.batch_name}
-                  </span>{" "}
-                  চলছে, এখনি{" "}
+                      },
+                    )}
+                  </div>
+                  <p className="mt-8  text-gray-400 text-center">
+                    তুমি যদি আগ্রহী হয়ে থাকো, আমাদের{" "}
+                    <span className="text-[#B153E0] font-semibold">
+                      {courseData?.chips?.batch_name}
+                    </span>{" "}
+                    চলছে, এখনি{" "}
 
-                  <a
-                    href={`https://courses.codervai.com/course-details/${currentCourseId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#B153E0] font-semibold"
-                  >
-                    রেজিস্টার
-                  </a>{" "}
-                  করে ফেলো!
-                </p>
-              </div>
-            </AnimationOnScroll>
-          )}
+                    <a
+                      href={`https://courses.codervai.com/course-details/${currentCourseId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#B153E0] font-semibold"
+                    >
+                      রেজিস্টার
+                    </a>{" "}
+                    করে ফেলো!
+                  </p>
+                </>
+              )}
+            </div>
+          </AnimationOnScroll>
 
           {/* //put some space here */}
 
